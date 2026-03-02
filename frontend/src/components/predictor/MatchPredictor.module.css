@@ -1,0 +1,240 @@
+.predictor {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.header {
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--color-gray-200);
+  text-align: center;
+}
+
+.header h3 {
+  font-size: 1.25rem;
+  color: var(--color-black);
+  margin-bottom: var(--space-xs);
+}
+
+.header p {
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+}
+
+.match {
+  padding: var(--space-xl);
+  background: linear-gradient(135deg, 
+    var(--color-gray-100) 0%, 
+    var(--color-gray-50) 100%
+  );
+  text-align: center;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-lg);
+}
+
+.teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xl);
+}
+
+.team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.crest {
+  width: 64px;
+  height: 64px;
+}
+
+.teamName {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-black);
+}
+
+.vs {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-400);
+}
+
+.form {
+  padding: var(--space-xl);
+}
+
+.scoreInputs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.scoreInput {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.scoreBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-gray-200);
+  color: var(--color-gray-600);
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.scoreBtn:hover {
+  background: var(--color-red);
+  color: var(--color-white);
+}
+
+.input {
+  width: 60px;
+  height: 48px;
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-black);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-red);
+}
+
+.scoreDivider {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-400);
+}
+
+.submitBtn {
+  width: 100%;
+  padding: var(--space-md) var(--space-xl);
+  background: var(--color-red);
+  color: var(--color-white);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-fast);
+}
+
+.submitBtn:hover {
+  background: var(--color-red-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.result {
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.predictionResult {
+  margin-bottom: var(--space-xl);
+}
+
+.resultLabel {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-gray-500);
+  margin-bottom: var(--space-md);
+}
+
+.resultScore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: var(--space-md);
+}
+
+.resultScore .winner {
+  color: var(--color-success);
+}
+
+.resultMessage {
+  font-size: 1rem;
+  color: var(--color-gray-600);
+}
+
+.resetBtn {
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-gray-200);
+  color: var(--color-gray-600);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
+}
+
+.resetBtn:hover {
+  background: var(--color-gray-300);
+}
+
+.info {
+  padding: var(--space-md) var(--space-xl);
+  background: var(--color-gray-100);
+  text-align: center;
+}
+
+.info p {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+}
+
+@media (max-width: 480px) {
+  .teams {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  
+  .crest {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .input {
+    width: 50px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+  
+  .scoreBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+}

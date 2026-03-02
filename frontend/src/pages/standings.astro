@@ -1,0 +1,39 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LeagueTable from '../components/premier-league/LeagueTable';
+---
+
+<Layout title="Premier League Standings | 5 Games in a Row">
+  <div class="container">
+    <section class="page-header">
+      <h1>Premier League</h1>
+      <p>Current standings and live updates</p>
+    </section>
+
+    <section class="standings-section">
+      <LeagueTable client:load />
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+  }
+
+  .page-header h1 {
+    color: var(--color-red);
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-header p {
+    color: var(--color-gray-500);
+    font-size: 1.125rem;
+  }
+
+  .standings-section {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+</style>

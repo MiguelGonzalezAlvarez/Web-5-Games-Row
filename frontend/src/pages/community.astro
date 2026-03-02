@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CommunityFeed from '../components/community/CommunityFeed';
+---
+
+<Layout title="Community | 5 Games in a Row">
+  <div class="container">
+    <section class="page-header">
+      <h1>Community</h1>
+      <p>Share your support for Frank's haircut challenge</p>
+    </section>
+
+    <section class="community-section">
+      <CommunityFeed client:load />
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+  }
+
+  .page-header h1 {
+    color: var(--color-red);
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-header p {
+    color: var(--color-gray-500);
+    font-size: 1.125rem;
+  }
+
+  .community-section {
+    padding-bottom: var(--space-2xl);
+  }
+</style>

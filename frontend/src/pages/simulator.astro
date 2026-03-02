@@ -1,0 +1,81 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import HaircutSimulator from '../../components/haircut/HaircutSimulator';
+---
+
+<Layout title="Haircut Simulator | 5 Games in a Row">
+  <div class="container">
+    <section class="page-header">
+      <h1>✂️ Haircut Simulator</h1>
+      <p>See how Frank's hair has grown over 500+ days</p>
+    </section>
+
+    <section class="simulator-section">
+      <HaircutSimulator client:load />
+    </section>
+
+    <section class="info-section">
+      <div class="info-card">
+        <h3>About the Simulator</h3>
+        <p>
+          This simulator shows a visual representation of how Frank's hair might look 
+          based on the number of days since he started his challenge on October 5, 2024.
+        </p>
+        <p>
+          Use the slider to travel through time and see the hair growth progression!
+        </p>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+  }
+
+  .page-header h1 {
+    color: var(--color-red);
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-header p {
+    color: var(--color-gray-500);
+    font-size: 1.125rem;
+  }
+
+  .simulator-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .info-section {
+    display: flex;
+    justify-content: center;
+  }
+
+  .info-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-md);
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .info-card h3 {
+    color: var(--color-black);
+    margin-bottom: var(--space-md);
+    font-size: 1.25rem;
+  }
+
+  .info-card p {
+    color: var(--color-gray-500);
+    margin-bottom: var(--space-md);
+    line-height: 1.7;
+  }
+
+  .info-card p:last-child {
+    margin-bottom: 0;
+  }
+</style>

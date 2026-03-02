@@ -1,0 +1,236 @@
+.counter {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-2xl);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.counter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, 
+    var(--color-red) 0%, 
+    var(--color-gold) 25%,
+    var(--color-red) 50%,
+    var(--color-gold) 75%,
+    var(--color-red) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+}
+
+.header h2 {
+  color: var(--color-red);
+  font-size: 1.5rem;
+}
+
+.scissors {
+  font-size: 1.5rem;
+}
+
+.mainCounter {
+  margin-bottom: var(--space-lg);
+}
+
+.daysCircle {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-red) 0%, var(--color-red-dark) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 
+    0 10px 30px rgba(218, 41, 28, 0.3),
+    inset 0 -5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.daysNumber {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--color-white);
+  line-height: 1;
+}
+
+.daysLabel {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-top: var(--space-xs);
+}
+
+.message {
+  font-size: 1.125rem;
+  color: var(--color-gray-500);
+  margin-bottom: var(--space-xl);
+  font-weight: 500;
+}
+
+.progressSection {
+  margin-bottom: var(--space-xl);
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.progressBar {
+  background: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  height: 24px;
+  position: relative;
+  overflow: visible;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-red) 0%, var(--color-gold) 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+  min-width: 0;
+}
+
+.progressMilestones {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+}
+
+.milestone {
+  width: 28px;
+  height: 28px;
+  background: var(--color-gray-300);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-gray-500);
+  margin-top: var(--space-sm);
+  transition: all var(--transition-fast);
+}
+
+.milestone.active {
+  background: var(--color-red);
+  color: var(--color-white);
+  transform: scale(1.1);
+}
+
+.nextMatch {
+  background: var(--color-gray-100);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.nextMatch h4 {
+  color: var(--color-gray-500);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-sm);
+}
+
+.nextMatch p {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--color-black);
+  margin-bottom: var(--space-xs);
+}
+
+.nextMatch time {
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+}
+
+.celebration {
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-red) 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin-top: var(--space-xl);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.celebration h3 {
+  font-size: 2rem;
+  color: var(--color-white);
+  margin-bottom: var(--space-sm);
+}
+
+.celebration p {
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.celebrationEmoji {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: var(--space-md);
+}
+
+.skeleton {
+  color: var(--color-gray-400);
+  padding: var(--space-xl);
+}
+
+.error {
+  color: var(--color-error);
+  padding: var(--space-xl);
+}
+
+@media (max-width: 480px) {
+  .counter {
+    padding: var(--space-lg);
+  }
+
+  .daysCircle {
+    width: 140px;
+    height: 140px;
+  }
+
+  .daysNumber {
+    font-size: 3rem;
+  }
+
+  .milestone {
+    width: 24px;
+    height: 24px;
+    font-size: 0.625rem;
+  }
+}

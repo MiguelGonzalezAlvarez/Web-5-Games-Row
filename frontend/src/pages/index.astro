@@ -1,0 +1,203 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HaircutCounter from '../components/haircut/HaircutCounter';
+import LeagueTable from '../components/premier-league/LeagueTable';
+import ManchesterMatches from '../components/premier-league/ManchesterMatches';
+import HistoricalStats from '../components/premier-league/HistoricalStats';
+import MatchPredictor from '../components/predictor/MatchPredictor';
+---
+
+<Layout title="5 Games in a Row | Manchester United Haircut Challenge">
+  <div class="container">
+    <section class="hero">
+      <h1>5 Games in a Row</h1>
+      <p class="hero-subtitle">Tracking Frank's haircut journey since October 2024</p>
+      <div class="hero-badge">
+        <span>🎯 Target: 5 consecutive wins</span>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="grid-item counter-section">
+        <HaircutCounter client:load />
+      </div>
+      
+      <div class="grid-item predictor-section">
+        <MatchPredictor client:load />
+      </div>
+      
+      <div class="grid-item matches-section">
+        <ManchesterMatches client:load />
+      </div>
+      
+      <div class="grid-item standings-section">
+        <LeagueTable client:load />
+      </div>
+      
+      <div class="grid-item stats-section">
+        <HistoricalStats client:load />
+      </div>
+    </section>
+
+    <section class="about">
+      <h2>What's This About?</h2>
+      <div class="about-content">
+        <p>
+          In October 2024, Manchester United fan Frank Ilett (@TheUnitedStrand) made a promise: 
+          he wouldn't cut his hair until the Red Devils won 5 games in a row.
+        </p>
+        <p>
+          Months later, he's still waiting. The challenge has become a viral sensation, 
+          with thousands of fans following his journey on social media.
+        </p>
+        <p class="hashtag">#TheUnitedStrand #5GamesInARow</p>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: var(--space-3xl) 0;
+    background: linear-gradient(135deg, 
+      var(--color-red) 0%, 
+      var(--color-red-dark) 50%,
+      var(--color-black) 100%
+    );
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--space-2xl);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  .hero h1 {
+    font-size: 4rem;
+    color: var(--color-white);
+    margin-bottom: var(--space-md);
+    position: relative;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: var(--space-lg);
+    position: relative;
+  }
+
+  .hero-badge {
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero-badge span {
+    background: var(--color-gold);
+    color: var(--color-black);
+    padding: var(--space-sm) var(--space-xl);
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    box-shadow: 0 4px 15px rgba(251, 225, 34, 0.4);
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .grid-item {
+    min-width: 0;
+  }
+
+  .counter-section {
+    grid-column: 1 / -1;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .predictor-section {
+    grid-column: 1 / -1;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .stats-section {
+    grid-column: 1 / -1;
+  }
+
+  .about {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .about h2 {
+    color: var(--color-red);
+    margin-bottom: var(--space-lg);
+    text-align: center;
+  }
+
+  .about-content {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .about-content p {
+    margin-bottom: var(--space-md);
+    line-height: 1.8;
+  }
+
+  .hashtag {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--color-red);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-top: var(--space-lg);
+  }
+
+  @media (max-width: 1024px) {
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding: var(--space-2xl) var(--space-md);
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+    }
+
+    .about {
+      padding: var(--space-lg);
+    }
+  }
+</style>

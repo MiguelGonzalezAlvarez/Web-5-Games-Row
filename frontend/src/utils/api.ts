@@ -112,6 +112,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(prediction),
     }),
+
+  // Demo mode
+  getDemoModeStatus: () => fetchAPI<any>('/football/demo-mode'),
+  
+  setDemoMode: (enabled: boolean) => 
+    fetchAPI<any>(`/football/demo-mode?enabled=${enabled}`, {
+      method: 'POST',
+    }),
 };
 
 export { ApiError };

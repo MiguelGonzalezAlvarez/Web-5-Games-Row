@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../../utils/api';
 import styles from './HistoricalStats.module.css';
 
 interface HistoricalStreak {
@@ -14,28 +15,25 @@ interface Stats {
   streaks_of_3_or_more: number;
 }
 
-const mockStats: Stats = {
-  longest_streak: 4,
-  total_streaks: 12,
-  top_streaks: [
-    { length: 4, start: '2026-02-01', end: '2026-02-10' },
-    { length: 3, start: '2025-12-15', end: '2025-12-26' },
-    { length: 3, start: '2025-08-20', end: '2025-09-01' },
-    { length: 2, start: '2025-05-10', end: '2025-05-15' },
-    { length: 2, start: '2025-03-01', end: '2025-03-08' },
-  ],
-  streaks_of_3_or_more: 2,
-};
-
 export default function HistoricalStats() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      setStats(mockStats);
-      setLoading(false);
-    }, 500);
+    async function fetchStats() {
+      try {
+        const data = await api.getHistoricalStreaks();
+        setStats(data);
+      } catch (err) {
+        setError('Failed to load historical stats');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStats();
   }, []);
 
   if (loading) {
@@ -46,8 +44,15 @@ export default function HistoricalStats() {
     );
   }
 
-  if (!stats) {
-    return null;
+  if (error || !stats) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h3>📊 Historical Streaks</h3>
+          <p>Unable to load stats</p>
+        </div>
+      </div>
+    );
   }
 
   return (

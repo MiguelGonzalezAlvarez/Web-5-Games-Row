@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { api } from '../../utils/api';
 import styles from './MatchPredictor.module.css';
 
 interface Prediction {
@@ -8,22 +9,48 @@ interface Prediction {
   awayScore: number;
 }
 
-const mockUpcomingMatch = {
-  homeTeam: 'Manchester United',
-  homeTeamCrest: 'https://crests.football-data.org/66.png',
-  awayTeam: 'Aston Villa',
-  awayTeamCrest: 'https://crests.football-data.org/55.png',
-  date: '2026-03-15T15:00:00Z',
-};
+interface NextMatch {
+  match_id: number;
+  utc_date: string;
+  home_team: string;
+  away_team: string;
+  home_team_crest?: string;
+  away_team_crest?: string;
+}
 
 export default function MatchPredictor() {
+  const [nextMatch, setNextMatch] = useState<NextMatch | null>(null);
+  const [loading, setLoading] = useState(true);
   const [prediction, setPrediction] = useState<Prediction>({
     homeTeam: 'Manchester United',
-    awayTeam: 'Aston Villa',
+    awayTeam: '',
     homeScore: 2,
     awayScore: 1,
   });
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    async function fetchNextMatch() {
+      try {
+        const data = await api.getNextMatch();
+        if (data) {
+          setNextMatch(data);
+          setPrediction({
+            homeTeam: data.home_team,
+            awayTeam: data.away_team,
+            homeScore: 2,
+            awayScore: 1,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load next match:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchNextMatch();
+  }, []);
 
   const handleHomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Math.max(0, Math.min(10, parseInt(e.target.value) || 0));
@@ -68,6 +95,31 @@ export default function MatchPredictor() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className={styles.predictor}>
+        <div className={styles.header}>
+          <h3>🎯 Match Predictor</h3>
+          <p>Loading next match...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!nextMatch) {
+    return (
+      <div className={styles.predictor}>
+        <div className={styles.header}>
+          <h3>🎯 Match Predictor</h3>
+          <p>No upcoming match found</p>
+        </div>
+        <div className={styles.info}>
+          <p>Check back later for the next Manchester United match!</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.predictor}>
       <div className={styles.header}>
@@ -77,7 +129,7 @@ export default function MatchPredictor() {
 
       <div className={styles.match}>
         <div className={styles.date}>
-          {new Date(mockUpcomingMatch.date).toLocaleDateString('en-GB', {
+          {new Date(nextMatch.utc_date).toLocaleDateString('en-GB', {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
@@ -89,8 +141,8 @@ export default function MatchPredictor() {
         <div className={styles.teams}>
           <div className={styles.team}>
             <img 
-              src={mockUpcomingMatch.homeTeamCrest} 
-              alt={mockUpcomingMatch.homeTeam}
+              src={nextMatch.home_team_crest || 'https://crests.football-data.org/66.png'} 
+              alt={nextMatch.home_team}
               className={styles.crest}
             />
             <span className={styles.teamName}>Man United</span>
@@ -100,11 +152,11 @@ export default function MatchPredictor() {
 
           <div className={styles.team}>
             <img 
-              src={mockUpcomingMatch.awayTeamCrest} 
-              alt={mockUpcomingMatch.awayTeam}
+              src={nextMatch.away_team_crest || 'https://crests.football-data.org/55.png'} 
+              alt={nextMatch.away_team}
               className={styles.crest}
             />
-            <span className={styles.teamName}>Aston Villa</span>
+            <span className={styles.teamName}>{nextMatch.away_team.replace(' FC', '')}</span>
           </div>
         </div>
       </div>

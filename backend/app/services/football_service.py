@@ -13,29 +13,33 @@ from app.schemas.football import (
 MANCHESTER_UNITED_ID = settings.MANCHESTER_UNITED_TEAM_ID
 
 
-MOCK_STANDINGS = [
-    PremierLeagueStanding(position=1, team_id=1, team_name="Liverpool", team_short_name="LIV", team_crest="https://crests.football-data.org/40.png", played_games=27, won=18, draw=5, lost=4, points=59, goals_for=60, goals_against=29, goal_difference=31, form="WDLWW"),
-    PremierLeagueStanding(position=2, team_id=2, team_name="Arsenal", team_short_name="ARS", team_crest="https://crests.football-data.org/57.png", played_games=27, won=17, draw=6, lost=4, points=57, goals_for=58, goals_against=26, goal_difference=32, form="WWWDL"),
-    PremierLeagueStanding(position=3, team_id=66, team_name="Manchester United", team_short_name="MUN", team_crest="https://crests.football-data.org/66.png", played_games=27, won=12, draw=6, lost=9, points=42, goals_for=36, goals_against=36, goal_difference=0, form="WWLWW"),
-    PremierLeagueStanding(position=4, team_id=4, team_name="Chelsea", team_short_name="CHE", team_crest="https://crests.football-data.org/49.png", played_games=27, won=14, draw=8, lost=5, points=50, goals_for=51, goals_against=29, goal_difference=22, form="WLWWW"),
-    PremierLeagueStanding(position=5, team_id=5, team_name="Manchester City", team_short_name="MCI", team_crest="https://crests.football-data.org/109.png", played_games=27, won=15, draw=4, lost=8, points=49, goals_for=59, goals_against=34, goal_difference=25, form="LWWWL"),
-    PremierLeagueStanding(position=6, team_id=6, team_name="Tottenham Hotspur", team_short_name="TOT", team_crest="https://crests.football-data.org/47.png", played_games=27, won=13, draw=5, lost=9, points=44, goals_for=52, goals_against=44, goal_difference=8, form="WWLWL"),
-    PremierLeagueStanding(position=7, team_id=7, team_name="Brighton & Hove Albion", team_short_name="BHA", team_crest="https://crests.football-data.org/51.png", played_games=27, won=11, draw=8, lost=8, points=41, goals_for=46, goals_against=40, goal_difference=6, form="DLWWL"),
-    PremierLeagueStanding(position=8, team_id=8, team_name="Fulham", team_short_name="FUL", team_crest="https://crests.football-data.org/63.png", played_games=27, won=11, draw=5, lost=11, points=38, goals_for=38, goals_against=38, goal_difference=0, form="WLDWW"),
-    PremierLeagueStanding(position=9, team_id=9, team_name="Aston Villa", team_short_name="AVL", team_crest="https://crests.football-data.org/55.png", played_games=27, won=11, draw=4, lost=12, points=37, goals_for=41, goals_against=44, goal_difference=-3, form="LLWLW"),
-    PremierLeagueStanding(position=10, team_id=10, team_name="Newcastle United", team_short_name="NEW", team_crest="https://crests.football-data.org/34.png", played_games=27, won=10, draw=5, lost=12, points=35, goals_for=39, goals_against=45, goal_difference=-6, form="LWLLW"),
+DEMO_STANDINGS = [
+    PremierLeagueStanding(position=1, team_id=57, team_name="Arsenal FC", team_short_name="Arsenal", team_crest="https://crests.football-data.org/57.png", played_games=27, won=18, draw=6, lost=3, points=60, goals_for=55, goals_against=25, goal_difference=30, form="WWWWD"),
+    PremierLeagueStanding(position=2, team_id=65, team_name="Manchester City FC", team_short_name="Man City", team_crest="https://crests.football-data.org/65.png", played_games=27, won=17, draw=5, lost=5, points=56, goals_for=58, goals_against=30, goal_difference=28, form="WWLWW"),
+    PremierLeagueStanding(position=3, team_id=66, team_name="Manchester United FC", team_short_name="Man United", team_crest="https://crests.football-data.org/66.png", played_games=27, won=13, draw=8, lost=6, points=47, goals_for=42, goals_against=32, goal_difference=10, form="WWDWW"),
+    PremierLeagueStanding(position=4, team_id=64, team_name="Liverpool FC", team_short_name="Liverpool", team_crest="https://crests.football-data.org/64.png", played_games=27, won=16, draw=5, lost=6, points=53, goals_for=52, goals_against=28, goal_difference=24, form="LWWWW"),
+    PremierLeagueStanding(position=5, team_id=61, team_name="Chelsea FC", team_short_name="Chelsea", team_crest="https://crests.football-data.org/61.png", played_games=27, won=14, draw=6, lost=7, points=48, goals_for=45, goals_against=30, goal_difference=15, form="WWLWW"),
+    PremierLeagueStanding(position=6, team_id=62, team_name="Tottenham Hotspur FC", team_short_name="Spurs", team_crest="https://crests.football-data.org/47.png", played_games=27, won=13, draw=5, lost=9, points=44, goals_for=48, goals_against=40, goal_difference=8, form="WLWWL"),
+    PremierLeagueStanding(position=7, team_id=58, team_name="Aston Villa FC", team_short_name="Aston Villa", team_crest="https://crests.football-data.org/58.png", played_games=27, won=12, draw=6, lost=9, points=42, goals_for=40, goals_against=35, goal_difference=5, form="DLLWW"),
+    PremierLeagueStanding(position=8, team_id=60, team_name="Newcastle United FC", team_short_name="Newcastle", team_crest="https://crests.football-data.org/67.png", played_games=27, won=11, draw=7, lost=9, points=40, goals_for=38, goals_against=38, goal_difference=0, form="WLDWL"),
+    PremierLeagueStanding(position=9, team_id=59, team_name="Brighton & Hove Albion FC", team_short_name="Brighton", team_crest="https://crests.football-data.org/397.png", played_games=27, won=10, draw=8, lost=9, points=38, goals_for=41, goals_against=40, goal_difference=1, form="WDWDL"),
+    PremierLeagueStanding(position=10, team_id=63, team_name="Fulham FC", team_short_name="Fulham", team_crest="https://crests.football-data.org/63.png", played_games=27, won=10, draw=6, lost=11, points=36, goals_for=35, goals_against=38, goal_difference=-3, form="LWWDL"),
+    PremierLeagueStanding(position=11, team_id=354, team_name="Crystal Palace FC", team_short_name="Crystal Palace", team_crest="https://crests.football-data.org/52.png", played_games=27, won=9, draw=8, lost=10, points=35, goals_for=30, goals_against=35, goal_difference=-5, form="WDWDL"),
+    PremierLeagueStanding(position=12, team_id=56, team_name="Brentford FC", team_short_name="Brentford", team_crest="https://crests.football-data.org/402.png", played_games=27, won=9, draw=6, lost=12, points=33, goals_for=38, goals_against=40, goal_difference=-2, form="LWDLW"),
 ]
 
 
-MOCK_MATCHES = [
-    PremierLeagueMatch(match_id=1, utc_date="2026-03-15T15:00:00Z", status="SCHEDULED", matchday=29, home_team="Manchester United", home_team_short="MUN", home_team_crest="https://crests.football-data.org/66.png", away_team="Arsenal", away_team_short="ARS", away_team_crest="https://crests.football-data.org/57.png", home_score=0, away_score=0, is_manchester_united=True),
-    PremierLeagueMatch(match_id=2, utc_date="2026-03-08T15:00:00Z", status="FINISHED", matchday=28, home_team="Leicester City", home_team_short="LEI", home_team_crest="https://crests.football-data.org/46.png", away_team="Manchester United", away_team_short="MUN", away_team_crest="https://crests.football-data.org/66.png", home_score=1, away_score=2, is_manchester_united=True),
-    PremierLeagueMatch(match_id=3, utc_date="2026-03-01T15:00:00Z", status="FINISHED", matchday=27, home_team="Manchester United", home_team_short="MUN", home_team_crest="https://crests.football-data.org/66.png", away_team="Ipswich Town", away_team_short="IPS", away_team_crest="https://crests.football-data.org/64.png", home_score=3, away_score=1, is_manchester_united=True),
-    PremierLeagueMatch(match_id=4, utc_date="2026-02-22T15:00:00Z", status="FINISHED", matchday=26, home_team="Manchester United", home_team_short="MUN", home_team_crest="https://crests.football-data.org/66.png", away_team="Everton", away_team_short="EVE", away_team_crest="https://crests.football-data.org/58.png", home_score=2, away_score=1, is_manchester_united=True),
-    PremierLeagueMatch(match_id=5, utc_date="2026-02-15T17:30:00Z", status="FINISHED", matchday=25, home_team="Fulham", home_team_short="FUL", home_team_crest="https://crests.football-data.org/63.png", away_team="Manchester United", away_team_short="MUN", away_team_crest="https://crests.football-data.org/66.png", home_score=0, away_score=1, is_manchester_united=True),
-    PremierLeagueMatch(match_id=6, utc_date="2026-02-08T15:00:00Z", status="FINISHED", matchday=24, home_team="Manchester United", home_team_short="MUN", home_team_crest="https://crests.football-data.org/66.png", away_team="Crystal Palace", away_team_short="CRY", away_team_crest="https://crests.football-data.org/52.png", home_score=1, away_score=0, is_manchester_united=True),
-    PremierLeagueMatch(match_id=7, utc_date="2026-02-01T15:00:00Z", status="FINISHED", matchday=23, home_team="Manchester United", home_team_short="MUN", home_team_crest="https://crests.football-data.org/66.png", away_team="Brighton & Hove Albion", away_team_short="BHA", away_team_crest="https://crests.football-data.org/51.png", home_score=1, away_score=2, is_manchester_united=True),
-    PremierLeagueMatch(match_id=8, utc_date="2026-01-25T15:00:00Z", status="FINISHED", matchday=22, home_team="Manchester United", home_team_short="MUN", home_team_crest="https://crests.football-data.org/66.png", away_team="Tottenham Hotspur", away_team_short="TOT", away_team_crest="https://crests.football-data.org/47.png", home_score=0, away_score=3, is_manchester_united=True),
+DEMO_MATCHES = [
+    PremierLeagueMatch(match_id=999001, utc_date="2026-03-07T15:00:00Z", status="SCHEDULED", matchday=28, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Arsenal FC", away_team_short="Arsenal", away_team_crest="https://crests.football-data.org/57.png", home_score=0, away_score=0, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999002, utc_date="2026-03-01T15:00:00Z", status="FINISHED", matchday=27, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Everton FC", away_team_short="Everton", away_team_crest="https://crests.football-data.org/58.png", home_score=2, away_score=1, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999003, utc_date="2026-02-22T15:00:00Z", status="FINISHED", matchday=26, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Tottenham Hotspur FC", away_team_short="Spurs", away_team_crest="https://crests.football-data.org/47.png", home_score=3, away_score=2, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999004, utc_date="2026-02-15T15:00:00Z", status="FINISHED", matchday=25, home_team="Fulham FC", home_team_short="Fulham", home_team_crest="https://crests.football-data.org/63.png", away_team="Manchester United FC", away_team_short="Man United", away_team_crest="https://crests.football-data.org/66.png", home_score=1, away_score=2, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999005, utc_date="2026-02-08T17:30:00Z", status="FINISHED", matchday=24, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Leicester City FC", away_team_short="Leicester", away_team_crest="https://crests.football-data.org/46.png", home_score=1, away_score=0, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999006, utc_date="2026-02-01T15:00:00Z", status="FINISHED", matchday=23, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="West Ham United FC", away_team_short="West Ham", away_team_crest="https://crests.football-data.org/56.png", home_score=2, away_score=0, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999007, utc_date="2026-01-25T15:00:00Z", status="FINISHED", matchday=22, home_team="Brighton & Hove Albion FC", home_team_short="Brighton", home_team_crest="https://crests.football-data.org/397.png", away_team="Manchester United FC", away_team_short="Man United", away_team_crest="https://crests.football-data.org/66.png", home_score=1, away_score=3, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999008, utc_date="2026-01-18T15:00:00Z", status="FINISHED", matchday=21, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Southampton FC", away_team_short="Southampton", away_team_crest="https://crests.football-data.org/38.png", home_score=4, away_score=0, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999009, utc_date="2026-01-11T15:00:00Z", status="FINISHED", matchday=20, home_team="Liverpool FC", home_team_short="Liverpool", home_team_crest="https://crests.football-data.org/64.png", away_team="Manchester United FC", away_team_short="Man United", away_team_crest="https://crests.football-data.org/66.png", home_score=2, away_score=1, is_manchester_united=True),
+    PremierLeagueMatch(match_id=999010, utc_date="2026-01-04T15:00:00Z", status="FINISHED", matchday=19, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Manchester City FC", away_team_short="Man City", away_team_crest="https://crests.football-data.org/65.png", home_score=1, away_score=1, is_manchester_united=True),
 ]
 
 
@@ -64,6 +68,22 @@ class MemoryCache:
 cache = MemoryCache()
 
 
+DEMO_MODE = False
+
+
+def set_demo_mode(enabled: bool):
+    """Enable or disable demo mode"""
+    global DEMO_MODE
+    DEMO_MODE = enabled
+    cache.clear()
+    logger.info(f"Demo mode {'enabled' if enabled else 'disabled'}")
+
+
+def is_demo_mode() -> bool:
+    """Check if demo mode is enabled"""
+    return DEMO_MODE
+
+
 class FootballAPIService:
     def __init__(self):
         self.base_url = settings.FOOTBALL_API_BASE_URL
@@ -72,6 +92,11 @@ class FootballAPIService:
 
     async def get_standings(self, use_cache: bool = True) -> List[PremierLeagueStanding]:
         """Get Premier League standings with caching"""
+        
+        if DEMO_MODE:
+            logger.info("Returning demo standings")
+            return DEMO_STANDINGS
+        
         cache_key = "standings"
         
         if use_cache:
@@ -119,12 +144,15 @@ class FootballAPIService:
 
             except httpx.HTTPError as e:
                 logger.error(f"Error fetching standings: {e}")
-                logger.info("Returning mock standings data")
-                cache.set(cache_key, MOCK_STANDINGS, ttl_seconds=300)
-                return MOCK_STANDINGS
+                raise Exception(f"Failed to fetch standings from API: {e}")
 
     async def get_matches(self, matchday: Optional[int] = None) -> List[PremierLeagueMatch]:
         """Get Premier League matches"""
+        
+        if DEMO_MODE:
+            logger.info("Returning demo matches")
+            return DEMO_MATCHES
+        
         cache_key = f"matches_{matchday or 'all'}"
         
         cached = cache.get(cache_key)
@@ -181,9 +209,7 @@ class FootballAPIService:
 
             except httpx.HTTPError as e:
                 logger.error(f"Error fetching matches: {e}")
-                logger.info("Returning mock matches data")
-                cache.set(cache_key, MOCK_MATCHES, ttl_seconds=180)
-                return MOCK_MATCHES
+                raise Exception(f"Failed to fetch matches from API: {e}")
 
     async def get_manchester_united_matches(self, limit: int = 10) -> List[PremierLeagueMatch]:
         """Get Manchester United recent matches"""
@@ -224,20 +250,27 @@ class FootballAPIService:
             if match.status != "FINISHED":
                 continue
 
-            if match.home_team == "Manchester United":
+            home_name = match.home_team.lower() if match.home_team else ""
+            away_name = match.away_team.lower() if match.away_team else ""
+            is_home = "manchester united" in home_name
+            is_away = "manchester united" in away_name
+            
+            if is_home:
                 if match.home_score > match.away_score:
                     result = "W"
                 elif match.home_score < match.away_score:
                     result = "L"
                 else:
                     result = "D"
-            else:
+            elif is_away:
                 if match.away_score > match.home_score:
                     result = "W"
                 elif match.away_score < match.home_score:
                     result = "L"
                 else:
                     result = "D"
+            else:
+                continue
 
             if result == "W":
                 if current_streak == 0:

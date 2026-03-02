@@ -6,7 +6,7 @@ from app.schemas.football import (
     PremierLeagueMatch,
     ChallengeStatus,
 )
-from app.services.football_service import football_service
+from app.services.football_service import football_service, set_demo_mode, is_demo_mode
 
 router = APIRouter()
 
@@ -57,3 +57,16 @@ async def get_challenge_status():
 async def get_historical_streaks():
     """Get historical winning streaks analysis"""
     return await football_service.get_historical_streaks()
+
+
+@router.post("/demo-mode")
+async def toggle_demo_mode(enabled: bool = True):
+    """Toggle demo mode on/off"""
+    set_demo_mode(enabled)
+    return {"demo_mode": is_demo_mode()}
+
+
+@router.get("/demo-mode")
+async def get_demo_mode_status():
+    """Get current demo mode status"""
+    return {"demo_mode": is_demo_mode()}

@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import DemoModeToggle from '../components/DemoModeToggle';
 
 interface Props {
   title: string;
@@ -51,6 +52,8 @@ const { title, description = 'The Manchester United 5 Games in a Row Challenge T
         <p class="footer-tagline">#TheUnitedStrand #5GamesInARow</p>
       </div>
     </footer>
+    
+    <DemoModeToggle client:load />
   </body>
 </html>
 

@@ -9,6 +9,7 @@ from app.schemas.football import (
     CurrentStreak,
     ChallengeStatus,
 )
+from app.services.football_providers import get_provider, FootballDataProvider
 
 MANCHESTER_UNITED_ID = settings.MANCHESTER_UNITED_TEAM_ID
 
@@ -69,6 +70,7 @@ cache = MemoryCache()
 
 
 DEMO_MODE = False
+CURRENT_PROVIDER: Optional[FootballDataProvider] = None
 
 
 def set_demo_mode(enabled: bool):
@@ -84,11 +86,35 @@ def is_demo_mode() -> bool:
     return DEMO_MODE
 
 
+def set_provider(provider_name: str):
+    """Set the football data provider"""
+    global CURRENT_PROVIDER
+    CURRENT_PROVIDER = get_provider(provider_name)
+    cache.clear()
+    logger.info(f"Football data provider set to: {provider_name}")
+
+
+def get_current_provider() -> FootballDataProvider:
+    """Get the current football data provider"""
+    global CURRENT_PROVIDER
+    if CURRENT_PROVIDER is None:
+        CURRENT_PROVIDER = get_provider()
+    return CURRENT_PROVIDER
+
+
 class FootballAPIService:
     def __init__(self):
-        self.base_url = settings.FOOTBALL_API_BASE_URL
-        self.api_key = settings.FOOTBALL_API_KEY
-        self.headers = {"X-Auth-Token": self.api_key}
+        self._provider: Optional[FootballDataProvider] = None
+    
+    @property
+    def provider(self) -> FootballDataProvider:
+        if self._provider is None:
+            self._provider = get_current_provider()
+        return self._provider
+    
+    @provider.setter
+    def provider(self, value: FootballDataProvider):
+        self._provider = value
 
     async def get_standings(self, use_cache: bool = True) -> List[PremierLeagueStanding]:
         """Get Premier League standings with caching"""
@@ -105,46 +131,13 @@ class FootballAPIService:
                 logger.info("Returning cached standings")
                 return cached
         
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"{self.base_url}/competitions/PL/standings",
-                    headers=self.headers,
-                    timeout=30.0,
-                )
-                response.raise_for_status()
-                data = response.json()
-
-                standings = []
-                for standing in data.get("standings", []):
-                    if standing.get("type") == "TOTAL":
-                        for entry in standing.get("table", []):
-                            standings.append(
-                                PremierLeagueStanding(
-                                    position=entry.get("position"),
-                                    team_id=entry.get("team", {}).get("id"),
-                                    team_name=entry.get("team", {}).get("name"),
-                                    team_short_name=entry.get("team", {}).get("shortName"),
-                                    team_crest=entry.get("team", {}).get("crest"),
-                                    played_games=entry.get("playedGames"),
-                                    won=entry.get("won"),
-                                    draw=entry.get("draw"),
-                                    lost=entry.get("lost"),
-                                    points=entry.get("points"),
-                                    goals_for=entry.get("goalsFor"),
-                                    goals_against=entry.get("goalsAgainst"),
-                                    goal_difference=entry.get("goalDifference"),
-                                    form=entry.get("form"),
-                                )
-                            )
-                        break
-
-                cache.set(cache_key, standings, ttl_seconds=300)
-                return standings
-
-            except httpx.HTTPError as e:
-                logger.error(f"Error fetching standings: {e}")
-                raise Exception(f"Failed to fetch standings from API: {e}")
+        try:
+            standings = await self.provider.get_standings()
+            cache.set(cache_key, standings, ttl_seconds=300)
+            return standings
+        except Exception as e:
+            logger.error(f"Error fetching standings: {e}")
+            raise Exception(f"Failed to fetch standings: {e}")
 
     async def get_matches(self, matchday: Optional[int] = None) -> List[PremierLeagueMatch]:
         """Get Premier League matches"""
@@ -159,57 +152,13 @@ class FootballAPIService:
         if cached:
             return cached
         
-        async with httpx.AsyncClient() as client:
-            try:
-                url = f"{self.base_url}/competitions/PL/matches"
-                params = {}
-                if matchday:
-                    params["matchday"] = matchday
-
-                response = await client.get(
-                    url,
-                    headers=self.headers,
-                    params=params,
-                    timeout=30.0,
-                )
-                response.raise_for_status()
-                data = response.json()
-
-                matches = []
-                for match in data.get("matches", []):
-                    home_team = match.get("homeTeam", {})
-                    away_team = match.get("awayTeam", {})
-                    score = match.get("score", {}).get("fullTime", {})
-
-                    is_mu = (
-                        home_team.get("id") == MANCHESTER_UNITED_ID
-                        or away_team.get("id") == MANCHESTER_UNITED_ID
-                    )
-
-                    matches.append(
-                        PremierLeagueMatch(
-                            match_id=match.get("id"),
-                            utc_date=match.get("utcDate"),
-                            status=match.get("status"),
-                            matchday=match.get("matchday"),
-                            home_team=home_team.get("name"),
-                            home_team_short=home_team.get("shortName"),
-                            home_team_crest=home_team.get("crest"),
-                            away_team=away_team.get("name"),
-                            away_team_short=away_team.get("shortName"),
-                            away_team_crest=away_team.get("crest"),
-                            home_score=score.get("home") or 0,
-                            away_score=score.get("away") or 0,
-                            is_manchester_united=is_mu,
-                        )
-                    )
-
-                cache.set(cache_key, matches, ttl_seconds=180)
-                return matches
-
-            except httpx.HTTPError as e:
-                logger.error(f"Error fetching matches: {e}")
-                raise Exception(f"Failed to fetch matches from API: {e}")
+        try:
+            matches = await self.provider.get_matches(matchday=matchday)
+            cache.set(cache_key, matches, ttl_seconds=180)
+            return matches
+        except Exception as e:
+            logger.error(f"Error fetching matches: {e}")
+            raise Exception(f"Failed to fetch matches: {e}")
 
     async def get_manchester_united_matches(self, limit: int = 10) -> List[PremierLeagueMatch]:
         """Get Manchester United recent matches"""

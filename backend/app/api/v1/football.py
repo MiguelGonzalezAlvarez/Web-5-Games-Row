@@ -6,9 +6,47 @@ from app.schemas.football import (
     PremierLeagueMatch,
     ChallengeStatus,
 )
-from app.services.football_service import football_service, set_demo_mode, is_demo_mode
+from app.services.football_service import football_service, set_demo_mode, is_demo_mode, set_provider, get_current_provider
 
 router = APIRouter()
+
+
+@router.get("/providers")
+async def get_providers():
+    """Get available football data providers"""
+    return {
+        "providers": [
+            {"name": "football-data.org", "description": "football-data.org (Recommended - latest data, free tier available)", "is_default": True},
+            {"name": "thesportsdb", "description": "TheSportsDB (Free, no API key required, may have outdated data)", "is_default": False},
+            {"name": "demo", "description": "Demo mode with static data", "is_default": False},
+        ],
+        "current_provider": get_current_provider().name
+    }
+
+
+@router.post("/providers/{provider_name}")
+async def change_provider(provider_name: str):
+    """Change the football data provider"""
+    valid_providers = ["thesportsdb", "football-data.org", "demo"]
+    
+    if provider_name.lower() not in valid_providers:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid provider. Available: {', '.join(valid_providers)}"
+        )
+    
+    set_provider(provider_name.lower())
+    
+    if provider_name.lower() == "demo":
+        set_demo_mode(True)
+    else:
+        set_demo_mode(False)
+    
+    return {
+        "success": True,
+        "provider": get_current_provider().name,
+        "message": f"Provider changed to {provider_name}"
+    }
 
 
 @router.get("/standings", response_model=list[PremierLeagueStanding])

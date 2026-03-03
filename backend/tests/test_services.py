@@ -38,9 +38,8 @@ class TestFootballAPIService:
             return FootballAPIService()
 
     def test_service_initialization(self, service):
-        assert service.base_url == "https://api.football-data.org/v4"
-        assert service.api_key == "test_key"
-        assert service.headers == {"X-Auth-Token": "test_key"}
+        assert service.provider is not None
+        assert service.provider.name in ["football-data.org", "TheSportsDB", "Demo Mode"]
 
     @pytest.mark.asyncio
     async def test_get_standings_cached(self, service):
@@ -56,57 +55,6 @@ class TestFootballAPIService:
         with patch.object(service, 'get_standings', return_value=mock_standings):
             result = await service.get_standings(use_cache=False)
             assert len(result) == 1
-
-    def test_calculate_match_result_manchester_home_win(self):
-        with patch('app.services.football_service.settings') as mock_settings:
-            mock_settings.FOOTBALL_API_BASE_URL = "https://api.football-data.org/v4"
-            mock_settings.FOOTBALL_API_KEY = "test_key"
-            mock_settings.MANCHESTER_UNITED_TEAM_ID = 66
-            
-            service = FootballAPIService()
-            
-            class MockMatch:
-                home_team = "Manchester United"
-                away_team = "Liverpool"
-                home_score = 2
-                away_score = 1
-                status = "FINISHED"
-            
-            assert service._calculate_result(MockMatch()) == "W"
-
-    def test_calculate_match_result_manchester_away_win(self):
-        with patch('app.services.football_service.settings') as mock_settings:
-            mock_settings.FOOTBALL_API_BASE_URL = "https://api.football-data.org/v4"
-            mock_settings.FOOTBALL_API_KEY = "test_key"
-            mock_settings.MANCHESTER_UNITED_TEAM_ID = 66
-            
-            service = FootballAPIService()
-            
-            class MockMatch:
-                home_team = "Liverpool"
-                away_team = "Manchester United"
-                home_score = 1
-                away_score = 2
-                status = "FINISHED"
-            
-            assert service._calculate_result(MockMatch()) == "W"
-
-    def test_calculate_match_result_draw(self):
-        with patch('app.services.football_service.settings') as mock_settings:
-            mock_settings.FOOTBALL_API_BASE_URL = "https://api.football-data.org/v4"
-            mock_settings.FOOTBALL_API_KEY = "test_key"
-            mock_settings.MANCHESTER_UNITED_TEAM_ID = 66
-            
-            service = FootballAPIService()
-            
-            class MockMatch:
-                home_team = "Manchester United"
-                away_team = "Liverpool"
-                home_score = 1
-                away_score = 1
-                status = "FINISHED"
-            
-            assert service._calculate_result(MockMatch()) == "D"
 
 
 class TestChallengeStatus:

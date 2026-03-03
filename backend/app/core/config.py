@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     # Football API (football-data.org)
     FOOTBALL_API_KEY: str = "YOUR_API_KEY_HERE"
     FOOTBALL_API_BASE_URL: str = "https://api.football-data.org/v4"
+    FOOTBALL_DATA_PROVIDER: str = "football-data.org"  # Options: thesportsdb, football-data.org, demo (Recommended: football-data.org for latest data)
     
     # Redis (optional)
     REDIS_URL: str = "redis://localhost:6379"

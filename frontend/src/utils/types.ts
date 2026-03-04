@@ -24,12 +24,15 @@ export interface Standing {
   goals_against: number;
   goal_difference: number;
   form: string | null;
+  // Computed properties for UI
+  is_manchester_united?: boolean;
+  has_valid_stats?: boolean;
 }
 
 export interface Match {
   match_id: number;
   utc_date: string;
-  status: string;
+  status: MatchStatus;
   matchday: number;
   home_team: string;
   home_team_short: string;
@@ -40,7 +43,12 @@ export interface Match {
   home_score: number;
   away_score: number;
   is_manchester_united: boolean;
+  // Computed properties for UI
+  mu_result?: 'W' | 'L' | 'D' | null;
+  formatted_date?: string;
 }
+
+export type MatchStatus = 'SCHEDULED' | 'FINISHED' | 'IN_PLAY' | 'POSTPONED' | 'CANCELLED' | 'SUSPENDED';
 
 export interface Post {
   id: number;
@@ -61,4 +69,20 @@ export interface User {
   email: string;
   username: string;
   avatar_url: string | null;
+}
+
+export interface Provider {
+  name: string;
+  description: string;
+  is_default: boolean;
+}
+
+export interface ProvidersResponse {
+  providers: Provider[];
+  current_provider: string;
+}
+
+export interface ApiError {
+  status: number;
+  message: string;
 }

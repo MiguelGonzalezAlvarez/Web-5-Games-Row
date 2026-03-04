@@ -38,8 +38,10 @@ class TestFootballAPIService:
             return FootballAPIService()
 
     def test_service_initialization(self, service):
-        assert service.provider is not None
-        assert service.provider.name in ["football-data.org", "TheSportsDB", "Demo Mode"]
+        from app.services.football_service import get_current_provider
+        provider = get_current_provider()
+        assert provider is not None
+        assert provider.name in ["football-data.org", "TheSportsDB", "Demo Mode"]
 
     @pytest.mark.asyncio
     async def test_get_standings_cached(self, service):

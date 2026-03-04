@@ -16,9 +16,9 @@ async def get_providers():
     """Get available football data providers"""
     return {
         "providers": [
-            {"name": "football-data.org", "description": "football-data.org (Recommended - latest data, free tier available)", "is_default": True},
-            {"name": "thesportsdb", "description": "TheSportsDB (Free, no API key required, may have outdated data)", "is_default": False},
-            {"name": "demo", "description": "Demo mode with static data", "is_default": False},
+            {"name": "football-data.org", "description": "football-data.org (Default - Most accurate data)", "is_default": True},
+            {"name": "thesportsdb", "description": "TheSportsDB (Free - May have limited data)", "is_default": False},
+            {"name": "demo", "description": "Demo Mode (Static sample data)", "is_default": False},
         ],
         "current_provider": get_current_provider().name
     }
@@ -69,14 +69,37 @@ async def get_manchester_united_matches(limit: int = 10):
 
 @router.get("/matches/next")
 async def get_next_match():
-    """Get next Manchester United match"""
+    """Get next Manchester United match (or last played if no upcoming)"""
     match = await football_service.get_next_manchester_united_match()
+    if not match:
+        last_match = await football_service.get_last_manchester_united_match()
+        if last_match:
+            return {
+                "match_id": last_match.match_id,
+                "utc_date": last_match.utc_date,
+                "home_team": last_match.home_team,
+                "away_team": last_match.away_team,
+                "home_score": last_match.home_score,
+                "away_score": last_match.away_score,
+                "status": last_match.status,
+                "is_next": False,
+                "message": "No upcoming match found. Showing last match."
+            }
     if not match:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No upcoming match found for Manchester United",
+            detail="No match found for Manchester United",
         )
-    return match
+    return {
+        "match_id": match.match_id,
+        "utc_date": match.utc_date,
+        "home_team": match.home_team,
+        "away_team": match.away_team,
+        "home_score": match.home_score,
+        "away_score": match.away_score,
+        "status": match.status,
+        "is_next": True,
+    }
 
 
 @router.get("/streak/current")

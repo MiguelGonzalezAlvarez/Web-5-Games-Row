@@ -95,6 +95,10 @@ export default function MatchPredictor() {
     }
   };
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23DA291C"/></svg>';
+  };
+
   if (loading) {
     return (
       <div className={styles.predictor}>
@@ -144,8 +148,9 @@ export default function MatchPredictor() {
               src={nextMatch.home_team_crest || 'https://crests.football-data.org/66.png'} 
               alt={nextMatch.home_team}
               className={styles.crest}
+              onError={handleImageError}
             />
-            <span className={styles.teamName}>Man United</span>
+            <span className={styles.teamName}>{nextMatch.home_team}</span>
           </div>
 
           <div className={styles.vs}>VS</div>
@@ -155,6 +160,7 @@ export default function MatchPredictor() {
               src={nextMatch.away_team_crest || 'https://crests.football-data.org/55.png'} 
               alt={nextMatch.away_team}
               className={styles.crest}
+              onError={handleImageError}
             />
             <span className={styles.teamName}>{nextMatch.away_team.replace(' FC', '')}</span>
           </div>

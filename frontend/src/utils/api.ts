@@ -1,7 +1,13 @@
+import type { Standing, Match, ChallengeStatus, ProvidersResponse, ApiError } from './types';
+
 const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8002/api/v1';
+const DEFAULT_TIMEOUT = 15000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000;
 
 interface FetchOptions extends RequestInit {
   timeout?: number;
+  retries?: number;
 }
 
 class ApiError extends Error {
@@ -14,11 +20,15 @@ class ApiError extends Error {
   }
 }
 
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function fetchWithTimeout<T>(
   url: string, 
   options: FetchOptions = {}
 ): Promise<T> {
-  const { timeout = 10000, ...fetchOptions } = options;
+  const { timeout = DEFAULT_TIMEOUT, ...fetchOptions } = options;
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -51,75 +61,190 @@ async function fetchWithTimeout<T>(
   }
 }
 
+async function fetchWithRetry<T>(
+  url: string,
+  options: FetchOptions = {}
+): Promise<T> {
+  const { retries = MAX_RETRIES, ...fetchOptions } = options;
+  
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fetchWithTimeout<T>(url, { ...fetchOptions, retries: 0 });
+    } catch (error) {
+      lastError = error as Error;
+      
+      // Don't retry on client errors (4xx)
+      if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+        throw error;
+      }
+      
+      // Wait before retrying
+      if (attempt < retries) {
+        await sleep(RETRY_DELAY * (attempt + 1));
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
 async function fetchAPI<T>(endpoint: string, options?: FetchOptions): Promise<T> {
   try {
-    return await fetchWithTimeout<T>(`${API_BASE_URL}${endpoint}`, options);
+    return await fetchWithRetry<T>(`${API_BASE_URL}${endpoint}`, options);
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error);
     throw error;
   }
 }
 
+// Helper to compute derived data for standings
+function computeStandingData(standings: Standing[]): Standing[] {
+  return standings.map(s => ({
+    ...s,
+    is_manchester_united: s.team_name.toLowerCase().includes('manchester united') || 
+                          s.team_short_name?.toLowerCase().includes('man united'),
+    has_valid_stats: s.played_games > 0 || s.points > 0 || s.goals_for > 0,
+  }));
+}
+
+// Helper to compute derived data for matches
+function computeMatchData(matches: Match[]): Match[] {
+  return matches.map(m => {
+    const isHome = m.home_team.toLowerCase().includes('manchester united') ||
+                   m.home_team_short?.toLowerCase().includes('man united');
+    
+    let muResult: 'W' | 'L' | 'D' | null = null;
+    if (m.status === 'FINISHED') {
+      if (isHome) {
+        muResult = m.home_score > m.away_score ? 'W' : 
+                   m.home_score < m.away_score ? 'L' : 'D';
+      } else {
+        muResult = m.away_score > m.home_score ? 'W' : 
+                   m.away_score < m.home_score ? 'L' : 'D';
+      }
+    }
+    
+    // Format date
+    let formattedDate = '';
+    try {
+      const date = new Date(m.utc_date);
+      if (!isNaN(date.getTime())) {
+        formattedDate = date.toLocaleDateString('en-GB', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        });
+      }
+    } catch {
+      formattedDate = '';
+    }
+    
+    return {
+      ...m,
+      mu_result: muResult,
+      formatted_date: formattedDate,
+    };
+  });
+}
+
 export const api = {
-  // Football endpoints
-  getStandings: () => fetchAPI<any[]>('/football/standings'),
+  // Football endpoints with typed responses
+  getStandings: async (): Promise<Standing[]> => {
+    const data = await fetchAPI<Standing[]>('/football/standings');
+    return computeStandingData(data);
+  },
   
-  getMatches: (matchday?: number) => 
-    fetchAPI<any[]>(`/football/matches${matchday ? `?matchday=${matchday}` : ''}`),
+  getMatches: async (matchday?: number): Promise<Match[]> => {
+    const endpoint = `/football/matches${matchday ? `?matchday=${matchday}` : ''}`;
+    const data = await fetchAPI<Match[]>(endpoint);
+    return computeMatchData(data);
+  },
   
-  getManchesterUnitedMatches: (limit = 10) => 
-    fetchAPI<any[]>(`/football/matches/manchester-united?limit=${limit}`),
+  getManchesterUnitedMatches: async (limit = 10): Promise<Match[]> => {
+    const data = await fetchAPI<Match[]>(`/football/matches/manchester-united?limit=${limit}`);
+    return computeMatchData(data).slice(0, limit);
+  },
   
-  getNextMatch: () => fetchAPI<any>('/football/matches/next'),
+  getNextMatch: async () => {
+    return fetchAPI<any>('/football/matches/next');
+  },
   
-  getCurrentStreak: () => fetchAPI<any>('/football/streak/current'),
+  getCurrentStreak: async () => {
+    return fetchAPI<any>('/football/streak/current');
+  },
   
-  getChallengeStatus: () => fetchAPI<any>('/football/challenge/status'),
+  getChallengeStatus: async (): Promise<ChallengeStatus> => {
+    return fetchAPI<ChallengeStatus>('/football/challenge/status');
+  },
   
-  getHistoricalStreaks: () => fetchAPI<any>('/football/streak/history'),
+  getHistoricalStreaks: async () => {
+    return fetchAPI<any>('/football/streak/history');
+  },
 
   // Community endpoints
-  getPosts: (skip = 0, limit = 20) => 
-    fetchAPI<any[]>(`/community/posts?skip=${skip}&limit=${limit}`),
+  getPosts: async (skip = 0, limit = 20) => {
+    return fetchAPI<any[]>(`/community/posts?skip=${skip}&limit=${limit}`);
+  },
   
-  createPost: (post: { image_url: string; caption?: string }) =>
-    fetchAPI<any>('/community/posts', {
+  createPost: async (post: { image_url: string; caption?: string }) => {
+    return fetchAPI<any>('/community/posts', {
       method: 'POST',
       body: JSON.stringify(post),
-    }),
+    });
+  },
   
-  likePost: (postId: number) =>
-    fetchAPI<any>(`/community/posts/${postId}/like`, { method: 'POST' }),
+  likePost: async (postId: number) => {
+    return fetchAPI<any>(`/community/posts/${postId}/like`, { method: 'POST' });
+  },
   
-  createComment: (postId: number, content: string) =>
-    fetchAPI<any>(`/community/posts/${postId}/comments`, {
+  createComment: async (postId: number, content: string) => {
+    return fetchAPI<any>(`/community/posts/${postId}/comments`, {
       method: 'POST',
       body: JSON.stringify({ content }),
-    }),
+    });
+  },
 
   // Predictions
-  getPredictions: (userId?: number) =>
-    fetchAPI<any[]>(`/community/predictions${userId ? `?user_id=${userId}` : ''}`),
+  getPredictions: async (userId?: number) => {
+    return fetchAPI<any[]>(`/community/predictions${userId ? `?user_id=${userId}` : ''}`);
+  },
   
-  createPrediction: (prediction: {
+  createPrediction: async (prediction: {
     match_id: string;
     home_team: string;
     away_team: string;
     prediction_home_goals: number;
     prediction_away_goals: number;
-  }) =>
-    fetchAPI<any>('/community/predictions', {
+  }) => {
+    return fetchAPI<any>('/community/predictions', {
       method: 'POST',
       body: JSON.stringify(prediction),
-    }),
+    });
+  },
 
   // Demo mode
-  getDemoModeStatus: () => fetchAPI<any>('/football/demo-mode'),
+  getDemoModeStatus: async () => {
+    return fetchAPI<any>('/football/demo-mode');
+  },
   
-  setDemoMode: (enabled: boolean) => 
-    fetchAPI<any>(`/football/demo-mode?enabled=${enabled}`, {
+  setDemoMode: async (enabled: boolean) => {
+    return fetchAPI<any>(`/football/demo-mode?enabled=${enabled}`, {
       method: 'POST',
-    }),
+    });
+  },
+
+  // Data providers
+  getProviders: async (): Promise<ProvidersResponse> => {
+    return fetchAPI<ProvidersResponse>('/football/providers');
+  },
+  
+  setProvider: async (providerName: string) => {
+    return fetchAPI<any>(`/football/providers/${providerName}`, {
+      method: 'POST',
+    });
+  },
 };
 
 export { ApiError };

@@ -1,7 +1,11 @@
+"""
+Football data providers with unified normalization.
+This module provides multiple providers with fallback support.
+"""
 import httpx
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Optional, List, Any
+from typing import Optional, List, Dict, Any
 from app.core.config import settings
 from app.core.logging import logger
 from app.schemas.football import (
@@ -10,68 +14,48 @@ from app.schemas.football import (
     CurrentStreak,
     ChallengeStatus,
 )
+from app.services.adapters import (
+    DataNormalizer,
+    StandingsNormalizer,
+    MatchesNormalizer,
+)
+from app.data.demo_data import DEMO_STANDINGS, DEMO_MATCHES
 
 MANCHESTER_UNITED_ID = settings.MANCHESTER_UNITED_TEAM_ID
 
 
-DEMO_STANDINGS = [
-    PremierLeagueStanding(position=1, team_id=57, team_name="Arsenal FC", team_short_name="Arsenal", team_crest="https://crests.football-data.org/57.png", played_games=27, won=18, draw=6, lost=3, points=60, goals_for=55, goals_against=25, goal_difference=30, form="WWWWD"),
-    PremierLeagueStanding(position=2, team_id=65, team_name="Manchester City FC", team_short_name="Man City", team_crest="https://crests.football-data.org/65.png", played_games=27, won=17, draw=5, lost=5, points=56, goals_for=58, goals_against=30, goal_difference=28, form="WWLWW"),
-    PremierLeagueStanding(position=3, team_id=66, team_name="Manchester United FC", team_short_name="Man United", team_crest="https://crests.football-data.org/66.png", played_games=27, won=13, draw=8, lost=6, points=47, goals_for=42, goals_against=32, goal_difference=10, form="WWDWW"),
-    PremierLeagueStanding(position=4, team_id=64, team_name="Liverpool FC", team_short_name="Liverpool", team_crest="https://crests.football-data.org/64.png", played_games=27, won=16, draw=5, lost=6, points=53, goals_for=52, goals_against=28, goal_difference=24, form="LWWWW"),
-    PremierLeagueStanding(position=5, team_id=61, team_name="Chelsea FC", team_short_name="Chelsea", team_crest="https://crests.football-data.org/61.png", played_games=27, won=14, draw=6, lost=7, points=48, goals_for=45, goals_against=30, goal_difference=15, form="WWLWW"),
-    PremierLeagueStanding(position=6, team_id=62, team_name="Tottenham Hotspur FC", team_short_name="Spurs", team_crest="https://crests.football-data.org/47.png", played_games=27, won=13, draw=5, lost=9, points=44, goals_for=48, goals_against=40, goal_difference=8, form="WLWWL"),
-    PremierLeagueStanding(position=7, team_id=58, team_name="Aston Villa FC", team_short_name="Aston Villa", team_crest="https://crests.football-data.org/58.png", played_games=27, won=12, draw=6, lost=9, points=42, goals_for=40, goals_against=35, goal_difference=5, form="DLLWW"),
-    PremierLeagueStanding(position=8, team_id=60, team_name="Newcastle United FC", team_short_name="Newcastle", team_crest="https://crests.football-data.org/67.png", played_games=27, won=11, draw=7, lost=9, points=40, goals_for=38, goals_against=38, goal_difference=0, form="WLDWL"),
-    PremierLeagueStanding(position=9, team_id=59, team_name="Brighton & Hove Albion FC", team_short_name="Brighton", team_crest="https://crests.football-data.org/397.png", played_games=27, won=10, draw=8, lost=9, points=38, goals_for=41, goals_against=40, goal_difference=1, form="WDWDL"),
-    PremierLeagueStanding(position=10, team_id=63, team_name="Fulham FC", team_short_name="Fulham", team_crest="https://crests.football-data.org/63.png", played_games=27, won=10, draw=6, lost=11, points=36, goals_for=35, goals_against=38, goal_difference=-3, form="LWWDL"),
-    PremierLeagueStanding(position=11, team_id=354, team_name="Crystal Palace FC", team_short_name="Crystal Palace", team_crest="https://crests.football-data.org/52.png", played_games=27, won=9, draw=8, lost=10, points=35, goals_for=30, goals_against=35, goal_difference=-5, form="WDWDL"),
-    PremierLeagueStanding(position=12, team_id=56, team_name="Brentford FC", team_short_name="Brentford", team_crest="https://crests.football-data.org/402.png", played_games=27, won=9, draw=6, lost=12, points=33, goals_for=38, goals_against=40, goal_difference=-2, form="LWDLW"),
-]
-
-
-DEMO_MATCHES = [
-    PremierLeagueMatch(match_id=999001, utc_date="2026-03-07T15:00:00Z", status="SCHEDULED", matchday=28, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Arsenal FC", away_team_short="Arsenal", away_team_crest="https://crests.football-data.org/57.png", home_score=0, away_score=0, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999002, utc_date="2026-03-01T15:00:00Z", status="FINISHED", matchday=27, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Everton FC", away_team_short="Everton", away_team_crest="https://crests.football-data.org/58.png", home_score=2, away_score=1, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999003, utc_date="2026-02-22T15:00:00Z", status="FINISHED", matchday=26, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Tottenham Hotspur FC", away_team_short="Spurs", away_team_crest="https://crests.football-data.org/47.png", home_score=3, away_score=2, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999004, utc_date="2026-02-15T15:00:00Z", status="FINISHED", matchday=25, home_team="Fulham FC", home_team_short="Fulham", home_team_crest="https://crests.football-data.org/63.png", away_team="Manchester United FC", away_team_short="Man United", away_team_crest="https://crests.football-data.org/66.png", home_score=1, away_score=2, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999005, utc_date="2026-02-08T17:30:00Z", status="FINISHED", matchday=24, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Leicester City FC", away_team_short="Leicester", away_team_crest="https://crests.football-data.org/46.png", home_score=1, away_score=0, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999006, utc_date="2026-02-01T15:00:00Z", status="FINISHED", matchday=23, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="West Ham United FC", away_team_short="West Ham", away_team_crest="https://crests.football-data.org/56.png", home_score=2, away_score=0, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999007, utc_date="2026-01-25T15:00:00Z", status="FINISHED", matchday=22, home_team="Brighton & Hove Albion FC", home_team_short="Brighton", home_team_crest="https://crests.football-data.org/397.png", away_team="Manchester United FC", away_team_short="Man United", away_team_crest="https://crests.football-data.org/66.png", home_score=1, away_score=3, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999008, utc_date="2026-01-18T15:00:00Z", status="FINISHED", matchday=21, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Southampton FC", away_team_short="Southampton", away_team_crest="https://crests.football-data.org/38.png", home_score=4, away_score=0, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999009, utc_date="2026-01-11T15:00:00Z", status="FINISHED", matchday=20, home_team="Liverpool FC", home_team_short="Liverpool", home_team_crest="https://crests.football-data.org/64.png", away_team="Manchester United FC", away_team_short="Man United", away_team_crest="https://crests.football-data.org/66.png", home_score=2, away_score=1, is_manchester_united=True),
-    PremierLeagueMatch(match_id=999010, utc_date="2026-01-04T15:00:00Z", status="FINISHED", matchday=19, home_team="Manchester United FC", home_team_short="Man United", home_team_crest="https://crests.football-data.org/66.png", away_team="Manchester City FC", away_team_short="Man City", away_team_crest="https://crests.football-data.org/65.png", home_score=1, away_score=1, is_manchester_united=True),
-]
-
-
 class FootballDataProvider(ABC):
-    """Abstract base class for football data providers"""
+    """Abstract base class for football data providers."""
     
     @property
     @abstractmethod
     def name(self) -> str:
-        """Provider name"""
+        """Provider name."""
         pass
     
     @property
     @abstractmethod
     def is_free(self) -> bool:
-        """Whether this provider has a free tier"""
+        """Whether this provider has a free tier."""
         pass
     
     @abstractmethod
     async def get_standings(self) -> List[PremierLeagueStanding]:
-        """Get Premier League standings"""
+        """Get Premier League standings."""
         pass
     
     @abstractmethod
     async def get_matches(self, matchday: Optional[int] = None) -> List[PremierLeagueMatch]:
-        """Get Premier League matches"""
+        """Get Premier League matches."""
         pass
+    
+    def _is_valid_data(self, data: List) -> bool:
+        """Check if provider returned valid data."""
+        return len(data) > 0
 
 
 class FootballDataOrgProvider(FootballDataProvider):
-    """Provider using football-data.org API"""
+    """Provider using football-data.org API."""
     
     def __init__(self):
         self.base_url = settings.FOOTBALL_API_BASE_URL
@@ -96,35 +80,19 @@ class FootballDataOrgProvider(FootballDataProvider):
                 )
                 response.raise_for_status()
                 data = response.json()
-
-                standings = []
-                for standing in data.get("standings", []):
-                    if standing.get("type") == "TOTAL":
-                        for entry in standing.get("table", []):
-                            standings.append(
-                                PremierLeagueStanding(
-                                    position=entry.get("position"),
-                                    team_id=entry.get("team", {}).get("id"),
-                                    team_name=entry.get("team", {}).get("name"),
-                                    team_short_name=entry.get("team", {}).get("shortName"),
-                                    team_crest=entry.get("team", {}).get("crest"),
-                                    played_games=entry.get("playedGames"),
-                                    won=entry.get("won"),
-                                    draw=entry.get("draw"),
-                                    lost=entry.get("lost"),
-                                    points=entry.get("points"),
-                                    goals_for=entry.get("goalsFor"),
-                                    goals_against=entry.get("goalsAgainst"),
-                                    goal_difference=entry.get("goalDifference"),
-                                    form=entry.get("form"),
-                                )
-                            )
-                        break
+                
+                # Use normalizer
+                standings = StandingsNormalizer.from_football_data(data)
+                
+                logger.info(f"FootballDataOrg: Got {len(standings)} standings")
                 return standings
 
             except httpx.HTTPError as e:
                 logger.error(f"Error fetching standings from football-data.org: {e}")
                 raise Exception(f"Failed to fetch standings from API: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}")
+                raise
     
     async def get_matches(self, matchday: Optional[int] = None) -> List[PremierLeagueMatch]:
         async with httpx.AsyncClient() as client:
@@ -143,185 +111,227 @@ class FootballDataOrgProvider(FootballDataProvider):
                 response.raise_for_status()
                 data = response.json()
 
-                matches = []
-                for match in data.get("matches", []):
-                    home_team = match.get("homeTeam", {})
-                    away_team = match.get("awayTeam", {})
-                    score = match.get("score", {}).get("fullTime", {})
-
-                    is_mu = (
-                        home_team.get("id") == MANCHESTER_UNITED_ID
-                        or away_team.get("id") == MANCHESTER_UNITED_ID
-                    )
-
-                    matches.append(
-                        PremierLeagueMatch(
-                            match_id=match.get("id"),
-                            utc_date=match.get("utcDate"),
-                            status=match.get("status"),
-                            matchday=match.get("matchday"),
-                            home_team=home_team.get("name"),
-                            home_team_short=home_team.get("shortName"),
-                            home_team_crest=home_team.get("crest"),
-                            away_team=away_team.get("name"),
-                            away_team_short=away_team.get("shortName"),
-                            away_team_crest=away_team.get("crest"),
-                            home_score=score.get("home") or 0,
-                            away_score=score.get("away") or 0,
-                            is_manchester_united=is_mu,
-                        )
-                    )
-
+                matches = MatchesNormalizer.from_football_data(
+                    data.get("matches", [])
+                )
+                
+                logger.info(f"FootballDataOrg: Got {len(matches)} matches")
                 return matches
 
             except httpx.HTTPError as e:
                 logger.error(f"Error fetching matches from football-data.org: {e}")
                 raise Exception(f"Failed to fetch matches from API: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}")
+                raise
 
 
 class TheSportsDBProvider(FootballDataProvider):
-    """Provider using TheSportsDB API (free, no API key required)"""
+    """Provider using TheSportsDB API (free, no API key required)."""
     
     BASE_URL = "https://www.thesportsdb.com/api/v1/json/3"
-    
-    TEAM_ID_MAP = {
-        "Arsenal": 133604,
-        "Aston Villa": 133601,
-        "Bournemouth": 134301,
-        "Brentford": 134355,
-        "Brighton": 133619,
-        "Burnley": 133623,
-        "Chelsea": 133610,
-        "Crystal Palace": 133632,
-        "Everton": 133615,
-        "Fulham": 133600,
-        "Leeds United": 133635,
-        "Liverpool": 133602,
-        "Manchester City": 133613,
-        "Manchester United": 133612,
-        "Newcastle": 134777,
-        "Nottingham Forest": 133720,
-        "Sunderland": 133603,
-        "Tottenham": 133616,
-        "West Ham": 133636,
-        "Wolverhampton": 133599,
-    }
+    PREMIER_LEAGUE_ID = 4328
+    MANCHESTER_UNITED_TSDB_ID = 133612
     
     @property
     def name(self) -> str:
-        return "TheSportsDB"
+        return "thesportsdb"
     
     @property
     def is_free(self) -> bool:
         return True
     
     async def get_standings(self) -> List[PremierLeagueStanding]:
+        """Get Premier League standings from TheSportsDB.
+        
+        Note: TheSportsDB doesn't provide real standings, so we try to 
+        calculate them from match results.
+        """
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.get(
+                # First, get all teams
+                teams_response = await client.get(
                     f"{self.BASE_URL}/lookup_all_teams.php",
-                    params={"id": 4328},
+                    params={"id": self.PREMIER_LEAGUE_ID},
                     timeout=30.0,
                 )
-                response.raise_for_status()
-                data = response.json()
+                teams_response.raise_for_status()
+                teams_data = teams_response.json()
+                teams = teams_data.get("teams", []) or []
                 
-                teams = data.get("teams", [])
+                # Then get recent matches to calculate standings
+                matches_response = await client.get(
+                    f"{self.BASE_URL}/eventspastleague.php",
+                    params={"id": self.PREMIER_LEAGUE_ID},
+                    timeout=30.0,
+                )
+                matches_response.raise_for_status()
+                matches_data = matches_response.json()
+                matches = matches_data.get("events", []) or []
                 
-                standings = []
-                for idx, team in enumerate(teams, 1):
-                    team_name = team.get("strTeam", "")
-                    team_id = int(team.get("idTeam", 0))
-                    
-                    standings.append(
-                        PremierLeagueStanding(
-                            position=idx,
-                            team_id=team_id,
-                            team_name=team_name,
-                            team_short_name=team.get("strTeamShort", team_name),
-                            team_crest=team.get("strTeamBadge", ""),
-                            played_games=0,
-                            won=0,
-                            draw=0,
-                            lost=0,
-                            points=0,
-                            goals_for=0,
-                            goals_against=0,
-                            goal_difference=0,
-                            form=None,
-                        )
-                    )
+                # Normalize using the adapter
+                standings = StandingsNormalizer.from_thesportsdb(teams, matches)
                 
-                return standings
+                # If we got valid standings with stats, use them
+                valid_standings = [s for s in standings if DataNormalizer.has_valid_stats(s)]
+                
+                if len(valid_standings) >= 10:
+                    logger.info(f"TheSportsDB: Got {len(valid_standings)} standings with stats")
+                    return valid_standings
+                
+                # Otherwise, try to get from search
+                logger.info("TheSportsDB: Not enough match data, fetching teams directly")
+                
+                # Get teams by searching for known PL teams
+                all_teams = await self._fetch_premier_league_teams(client)
+                
+                if all_teams:
+                    standings = StandingsNormalizer.from_thesportsdb(all_teams, matches)
+                    logger.info(f"TheSportsDB: Got {len(standings)} standings from team search")
+                    return standings
+                
+                # If still no data, return empty list (will trigger fallback)
+                logger.warning("TheSportsDB: No valid standings data available")
+                return []
 
             except httpx.HTTPError as e:
                 logger.error(f"Error fetching standings from TheSportsDB: {e}")
                 raise Exception(f"Failed to fetch standings from TheSportsDB: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error in TheSportsDB: {e}")
+                raise
     
-    async def get_matches(self, matchday: Optional[int] = None) -> List[PremierLeagueMatch]:
-        async with httpx.AsyncClient() as client:
+    async def _fetch_premier_league_teams(self, client: httpx.AsyncClient) -> List[Dict[str, Any]]:
+        """Fetch Premier League teams by searching."""
+        team_names = [
+            "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
+            "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fulham",
+            "Liverpool", "Manchester City", "Manchester United", "Newcastle",
+            "Nottingham Forest", "Tottenham", "West Ham", "Wolverhampton",
+            "Luton Town", "Sheffield United", "Southampton", "Leeds United",
+            "Leicester City", "Sunderland", "West Brom"
+        ]
+        
+        all_teams = []
+        seen_ids = set()
+        
+        for team_name in team_names:
             try:
                 response = await client.get(
-                    f"{self.BASE_URL}/eventsnextleague.php",
-                    params={"id": 4328},
-                    timeout=30.0,
+                    f"{self.BASE_URL}/searchteams.php",
+                    params={"t": team_name},
+                    timeout=10.0,
                 )
-                response.raise_for_status()
                 data = response.json()
+                teams = data.get("teams", []) or []
                 
-                events = data.get("events", []) or []
+                if teams:
+                    team = teams[0]
+                    team_id = team.get("idTeam")
+                    
+                    # Avoid duplicates
+                    if team_id and team_id not in seen_ids:
+                        # Verify it's Premier League
+                        league = team.get("strLeague", "")
+                        if "Premier" in league or "Premier" in str(league):
+                            all_teams.append(team)
+                            seen_ids.add(team_id)
+                        # Also check if it's a known PL team by name
+                        elif DataNormalizer.normalize_team_name(team.get("strTeam", "")) in [
+                            "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
+                            "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fulham",
+                            "Liverpool", "Manchester City", "Manchester United", "Newcastle",
+                            "Nottingham Forest", "Tottenham", "West Ham", "Wolves",
+                            "Luton Town", "Sheffield United"
+                        ]:
+                            all_teams.append(team)
+                            seen_ids.add(team_id)
+                            
+            except Exception as e:
+                logger.debug(f"Could not fetch team {team_name}: {e}")
+                continue
+        
+        return all_teams
+    
+    async def get_matches(self, matchday: Optional[int] = None) -> List[PremierLeagueMatch]:
+        """Get Premier League matches from TheSportsDB."""
+        async with httpx.AsyncClient() as client:
+            try:
+                all_matches = []
                 
-                matches = []
-                for event in events:
-                    home_team = event.get("strHomeTeam", "")
-                    away_team = event.get("strAwayTeam", "")
-                    
-                    is_mu = "Manchester United" in home_team or "Manchester United" in away_team
-                    
-                    home_score = 0
-                    away_score = 0
-                    status = "SCHEDULED"
-                    
-                    if event.get("intHomeScore") is not None:
-                        home_score = event.get("intHomeScore", 0)
-                        away_score = event.get("intAwayScore", 0)
-                        status = "FINISHED"
-                    
-                    date_str = event.get("dateEventLocal", "")
-                    time_str = event.get("strTimeLocal", "")
-                    utc_date = f"{date_str}T{time_str}Z" if date_str and time_str else ""
-                    
-                    matches.append(
-                        PremierLeagueMatch(
-                            match_id=int(event.get("idEvent", 0)),
-                            utc_date=utc_date,
-                            status=status,
-                            matchday=event.get("intRound", 0),
-                            home_team=home_team,
-                            home_team_short=event.get("strHomeTeam", ""),
-                            home_team_crest=event.get("strHomeTeamBadge", ""),
-                            away_team=away_team,
-                            away_team_short=event.get("strAwayTeam", ""),
-                            away_team_crest=event.get("strAwayTeamBadge", ""),
-                            home_score=home_score,
-                            away_score=away_score,
-                            is_manchester_united=is_mu,
-                        )
+                # Get next matches
+                try:
+                    next_response = await client.get(
+                        f"{self.BASE_URL}/eventsnextleague.php",
+                        params={"id": self.PREMIER_LEAGUE_ID},
+                        timeout=30.0,
                     )
+                    next_data = next_response.json()
+                    next_events = next_data.get("events", []) or []
+                    all_matches.extend(next_events)
+                except Exception as e:
+                    logger.debug(f"Could not fetch next matches: {e}")
                 
-                return matches
+                # Get past matches
+                try:
+                    past_response = await client.get(
+                        f"{self.BASE_URL}/eventspastleague.php",
+                        params={"id": self.PREMIER_LEAGUE_ID},
+                        timeout=30.0,
+                    )
+                    past_data = past_response.json()
+                    past_events = past_data.get("events", []) or []
+                    all_matches.extend(past_events)
+                except Exception as e:
+                    logger.debug(f"Could not fetch past matches: {e}")
+                
+                # If still no matches, try MU-specific
+                if not all_matches:
+                    try:
+                        mu_response = await client.get(
+                            f"{self.BASE_URL}/eventslast.php",
+                            params={"id": self.MANCHESTER_UNITED_TSDB_ID},
+                            timeout=30.0,
+                        )
+                        mu_data = mu_response.json()
+                        mu_events = mu_data.get("events", []) or []
+                        all_matches.extend(mu_events)
+                        
+                        mu_next_response = await client.get(
+                            f"{self.BASE_URL}/eventsnext.php",
+                            params={"id": self.MANCHESTER_UNITED_TSDB_ID},
+                            timeout=30.0,
+                        )
+                        mu_next_data = mu_next_response.json()
+                        mu_next_events = mu_next_data.get("events", []) or []
+                        all_matches.extend(mu_next_events)
+                    except Exception as e:
+                        logger.debug(f"Could not fetch MU matches: {e}")
+                
+                # Normalize matches
+                if all_matches:
+                    matches = MatchesNormalizer.from_thesportsdb(all_matches)
+                    logger.info(f"TheSportsDB: Got {len(matches)} matches")
+                    return matches
+                
+                # Return empty if no data
+                logger.warning("TheSportsDB: No matches available")
+                return []
 
             except httpx.HTTPError as e:
                 logger.error(f"Error fetching matches from TheSportsDB: {e}")
                 raise Exception(f"Failed to fetch matches from TheSportsDB: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error in TheSportsDB get_matches: {e}")
+                raise
 
 
 class DemoProvider(FootballDataProvider):
-    """Demo provider with static data"""
+    """Demo provider with static data (always works)."""
     
     @property
     def name(self) -> str:
-        return "Demo Mode"
+        return "demo"
     
     @property
     def is_free(self) -> bool:
@@ -334,21 +344,49 @@ class DemoProvider(FootballDataProvider):
         return DEMO_MATCHES
 
 
+# Provider registry
 PROVIDERS = {
     "football-data.org": FootballDataOrgProvider,
     "thesportsdb": TheSportsDBProvider,
     "demo": DemoProvider,
 }
 
+# Fallback order (tried in order)
+PROVIDER_FALLBACK_ORDER = ["football-data.org", "thesportsdb", "demo"]
 
-def get_provider(provider_name: str = None) -> FootballDataProvider:
-    """Get a football data provider by name"""
+
+def get_provider(provider_name: Optional[str] = None) -> FootballDataProvider:
+    """Get a football data provider by name."""
     if provider_name is None:
         provider_name = settings.FOOTBALL_DATA_PROVIDER
     
     provider_class = PROVIDERS.get(provider_name.lower())
     if provider_class is None:
-        logger.warning(f"Unknown provider '{provider_name}', using football-data.org")
-        provider_class = PROVIDERS["football-data.org"]
+        logger.warning(f"Unknown provider '{provider_name}', using demo")
+        provider_class = PROVIDERS["demo"]
     
     return provider_class()
+
+
+def get_provider_with_fallback() -> tuple[FootballDataProvider, str]:
+    """Get a working provider with automatic fallback.
+    
+    Returns:
+        tuple: (provider, provider_name)
+    """
+    last_error = None
+    
+    for provider_name in PROVIDER_FALLBACK_ORDER:
+        try:
+            provider = get_provider(provider_name)
+            logger.info(f"Trying provider: {provider_name}")
+            return provider, provider_name
+            
+        except Exception as e:
+            logger.warning(f"Provider {provider_name} failed: {e}")
+            last_error = e
+            continue
+    
+    # If all fail, return demo
+    logger.warning("All providers failed, using demo")
+    return get_provider("demo"), "demo"

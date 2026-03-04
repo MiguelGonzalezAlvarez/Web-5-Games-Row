@@ -3,10 +3,23 @@ import { api } from '../../utils/api';
 import type { Match } from '../../utils/types';
 import styles from './ManchesterMatches.module.css';
 
+const MANCHESTER_UNITED_NAMES = ['Manchester United', 'Man United'];
+
 export default function ManchesterMatches() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isManchesterUnited = (teamName: string) => {
+    if (!teamName) return false;
+    return MANCHESTER_UNITED_NAMES.some(name => 
+      teamName.toLowerCase().includes(name.toLowerCase())
+    );
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23DA291C"/></svg>';
+  };
 
   useEffect(() => {
     async function fetchMatches() {
@@ -22,6 +35,8 @@ export default function ManchesterMatches() {
     }
 
     fetchMatches();
+    const interval = setInterval(fetchMatches, 300000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -33,7 +48,7 @@ export default function ManchesterMatches() {
   }
 
   const getResultClass = (match: Match) => {
-    const muIsHome = match.home_team === 'Manchester United';
+    const muIsHome = isManchesterUnited(match.home_team);
     const muWon = muIsHome ? match.home_score > match.away_score : match.away_score > match.home_score;
     const muDrew = match.home_score === match.away_score;
     
@@ -43,7 +58,10 @@ export default function ManchesterMatches() {
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
+    if (!dateStr) return '--';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '--';
+    return date.toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'short',
     });
@@ -62,25 +80,35 @@ export default function ManchesterMatches() {
             <div className={styles.date}>{formatDate(match.utc_date)}</div>
             
             <div className={styles.teams}>
-              <div className={`${styles.team} ${match.home_team === 'Manchester United' ? styles.muTeam : ''}`}>
-                <img src={match.home_team_crest} alt={match.home_team} className={styles.crest} />
-                <span>{match.home_team_short}</span>
+              <div className={`${styles.team} ${isManchesterUnited(match.home_team) ? styles.muTeam : ''}`}>
+                <img 
+                  src={match.home_team_crest || ''} 
+                  alt={match.home_team} 
+                  className={styles.crest}
+                  onError={handleImageError}
+                />
+                <span>{match.home_team_short || match.home_team}</span>
               </div>
               
               <div className={styles.score}>
-                <span>{match.home_score}</span>
+                <span>{match.home_score ?? 0}</span>
                 <span>-</span>
-                <span>{match.away_score}</span>
+                <span>{match.away_score ?? 0}</span>
               </div>
               
-              <div className={`${styles.team} ${match.away_team === 'Manchester United' ? styles.muTeam : ''}`}>
-                <img src={match.away_team_crest} alt={match.away_team} className={styles.crest} />
-                <span>{match.away_team_short}</span>
+              <div className={`${styles.team} ${isManchesterUnited(match.away_team) ? styles.muTeam : ''}`}>
+                <img 
+                  src={match.away_team_crest || ''} 
+                  alt={match.away_team} 
+                  className={styles.crest}
+                  onError={handleImageError}
+                />
+                <span>{match.away_team_short || match.away_team}</span>
               </div>
             </div>
             
             <div className={styles.result}>
-              {match.home_team === 'Manchester United' 
+              {isManchesterUnited(match.home_team) 
                 ? (match.home_score > match.away_score ? 'W' : match.home_score < match.away_score ? 'L' : 'D')
                 : (match.away_score > match.home_score ? 'W' : match.away_score < match.home_score ? 'L' : 'D')
               }

@@ -1,58 +1,198 @@
 .container {
   background: var(--color-white);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
+  border-radius: var(--radius-2xl);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    var(--color-red) 0%, 
+    var(--color-red-light) 50%, 
+    var(--color-red) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease infinite;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+ 0% { background-position: -200% 0; }
+ 100% { background-position: 200% 0; }
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-lg) var(--space-xl);
-  border-bottom: 1px solid var(--color-gray-200);
+  padding: var(--space-xl) var(--space-2xl);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(180deg, 
+    rgba(248, 249, 250, 0.5) 0%, 
+    rgba(248, 249, 250, 0) 100%
+  );
 }
 
 .header h3 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
+  color: var(--color-black);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .badge {
-  background: var(--color-red);
-  color: var(--color-white);
-  font-size: 0.625rem;
+  background: linear-gradient(135deg, var(--color-red) 0%, var(--color-red-dark) 100%);
+  color: white;
+  font-size: 0.6875rem;
   font-weight: 700;
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
   letter-spacing: 0.1em;
+  box-shadow: 0 2px 10px rgba(218, 41, 28, 0.3);
+  animation: pulse 2s ease-in-out infinite;
 }
 
 .matches {
-  max-height: 500px;
+  flex: 1;
   overflow-y: auto;
+  padding: var(--space-sm) 0;
+}
+
+.matches::-webkit-scrollbar {
+  width: 6px;
+}
+
+.matches::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+  border-radius: 3px;
+}
+
+.matches::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: 3px;
+}
+
+.matches::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
 }
 
 .match {
   display: grid;
-  grid-template-columns: 50px 1fr 30px;
+  grid-template-columns: 60px 1fr 40px;
   align-items: center;
-  padding: var(--space-md) var(--space-xl);
-  border-bottom: 1px solid var(--color-gray-100);
-  transition: background var(--transition-fast);
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInRow 0.4s ease forwards;
+  opacity: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.match::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  transition: width 0.3s ease;
 }
 
 .match:hover {
-  background: var(--color-gray-100);
+  transform: scale(1.02);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.match:nth-child(1) { animation-delay: 0.05s; }
+.match:nth-child(2) { animation-delay: 0.1s; }
+.match:nth-child(3) { animation-delay: 0.15s; }
+.match:nth-child(4) { animation-delay: 0.2s; }
+.match:nth-child(5) { animation-delay: 0.25s; }
+.match:nth-child(6) { animation-delay: 0.3s; }
+.match:nth-child(7) { animation-delay: 0.35s; }
+.match:nth-child(8) { animation-delay: 0.4s; }
+.match:nth-child(9) { animation-delay: 0.45s; }
+.match:nth-child(10) { animation-delay: 0.5s; }
+
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .match:last-child {
   border-bottom: none;
 }
 
+.win::before {
+  background: linear-gradient(90deg, var(--color-success), transparent);
+}
+
+.draw::before {
+  background: linear-gradient(90deg, var(--color-warning), transparent);
+}
+
+.loss::before {
+  background: linear-gradient(90deg, var(--color-error), transparent);
+}
+
+.win {
+  background: linear-gradient(90deg, 
+    rgba(34, 197, 94, 0.05) 0%, 
+    rgba(34, 197, 94, 0.02) 100%
+  );
+}
+
+.draw {
+  background: linear-gradient(90deg, 
+    rgba(245, 158, 11, 0.05) 0%, 
+    rgba(245, 158, 11, 0.02) 100%
+  );
+}
+
+.loss {
+  background: linear-gradient(90deg, 
+    rgba(239, 68, 68, 0.05) 0%, 
+    rgba(239, 68, 68, 0.02) 100%
+  );
+}
+
 .date {
   font-size: 0.75rem;
   color: var(--color-gray-400);
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
 }
 
 .teams {
@@ -67,6 +207,7 @@
   align-items: center;
   gap: var(--space-sm);
   flex: 1;
+  transition: all 0.2s ease;
 }
 
 .team:last-child {
@@ -78,14 +219,31 @@
   font-weight: 700;
 }
 
+.muTeam .teamName {
+  color: var(--color-red);
+}
+
 .crest {
-  width: 24px;
-  height: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: var(--color-gray-100);
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.match:hover .crest {
+  transform: scale(1.15) rotate(10deg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .team span {
   font-size: 0.875rem;
   color: var(--color-gray-600);
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
 .score {
@@ -94,66 +252,102 @@
   gap: var(--space-xs);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.25rem;
   color: var(--color-black);
+  background: var(--color-gray-100);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-lg);
+  min-width: 70px;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.match:hover .score {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .result {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: resultPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes resultPop {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .win .result {
-  background: var(--color-success);
-  color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-success) 0%, #16a34a 100%);
 }
 
 .draw .result {
-  background: var(--color-warning);
-  color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-warning) 0%, #d97706 100%);
 }
 
 .loss .result {
-  background: var(--color-error);
-  color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-error) 0%, #dc2626 100%);
 }
 
-.win {
-  background: rgba(34, 197, 94, 0.05);
-}
+@media (max-width: 640px) {
+  .header {
+    padding: var(--space-lg);
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: flex-start;
+  }
 
-.draw {
-  background: rgba(245, 158, 11, 0.05);
-}
-
-.loss {
-  background: rgba(239, 68, 68, 0.05);
-}
-
-@media (max-width: 480px) {
   .match {
-    padding: var(--space-sm) var(--space-md);
-    grid-template-columns: 40px 1fr 24px;
+    padding: var(--space-md);
+    grid-template-columns: 50px 1fr 32px;
   }
 
   .crest {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
   }
 
   .score {
-    font-size: 0.875rem;
+    font-size: 1rem;
+    min-width: 50px;
+    padding: var(--space-xs);
   }
 
   .result {
-    width: 24px;
-    height: 24px;
-    font-size: 0.625rem;
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+
+  .team span {
+    font-size: 0.75rem;
+  }
+
+  .date {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .teams {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .team:last-child {
+    flex-direction: row-reverse;
   }
 }

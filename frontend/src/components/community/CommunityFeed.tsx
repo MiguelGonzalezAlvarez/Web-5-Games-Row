@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../utils/api';
 import type { Post } from '../../utils/types';
+import { 
+  Heart, 
+  Image,
+  Loader2,
+  Send,
+  Info
+} from 'lucide-react';
+import { slideInLeft } from '../ui/animationConstants';
 import styles from './CommunityFeed.module.css';
 
 export default function CommunityFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [newPostUrl, setNewPostUrl] = useState('');
   const [newPostCaption, setNewPostCaption] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -59,69 +67,142 @@ export default function CommunityFeed() {
   };
 
   if (loading) {
-    return <div className={styles.loading}>Loading community posts...</div>;
+    return (
+      <motion.div 
+        className={styles.community}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <motion.div 
+          className={styles.createPost}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h3>Share Your Support</h3>
+          <div className={styles.loadingContainer}>
+            <Loader2 className={styles.spinning} size={24} />
+            <p>Loading community posts...</p>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
   }
 
   return (
-    <div className={styles.community}>
-      <div className={styles.createPost}>
+    <motion.div 
+      className={styles.community}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div 
+        className={styles.createPost}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
         <h3>Share Your Support</h3>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <input
-            type="url"
-            placeholder="Image URL (paste a photo URL)"
-            value={newPostUrl}
-            onChange={(e) => setNewPostUrl(e.target.value)}
-            className={styles.input}
-            required
-          />
-          <textarea
-            placeholder="Add a caption... (optional)"
-            value={newPostCaption}
-            onChange={(e) => setNewPostCaption(e.target.value)}
-            className={styles.textarea}
-            rows={2}
-          />
-          <button 
+          <motion.div 
+            className={styles.inputWrapper}
+            whileFocusWithin={{ scale: 1.01 }}
+          >
+            <Image size={18} className={styles.inputIcon} />
+            <input
+              type="url"
+              placeholder="Image URL (paste a photo URL)"
+              value={newPostUrl}
+              onChange={(e) => setNewPostUrl(e.target.value)}
+              className={styles.input}
+              required
+            />
+          </motion.div>
+          <motion.div 
+            className={styles.textareaWrapper}
+            whileFocusWithin={{ scale: 1.01 }}
+          >
+            <textarea
+              placeholder="Add a caption... (optional)"
+              value={newPostCaption}
+              onChange={(e) => setNewPostCaption(e.target.value)}
+              className={styles.textarea}
+              rows={2}
+            />
+          </motion.div>
+          <motion.button 
             type="submit" 
             className={styles.submitBtn}
             disabled={submitting}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            {submitting ? 'Posting...' : 'Share Post'}
-          </button>
+            {submitting ? (
+              <>
+                <Loader2 className={styles.spinning} size={16} />
+                Posting...
+              </>
+            ) : (
+              <>
+                <Send size={16} />
+                Share Post
+              </>
+            )}
+          </motion.button>
         </form>
-      </div>
+      </motion.div>
 
-      <div className={styles.posts}>
+      <motion.div 
+        className={styles.posts}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
         <h3>Community Posts</h3>
         {posts.length === 0 ? (
-          <div className={styles.empty}>
+          <motion.div 
+            className={styles.empty}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <Info size={32} className={styles.emptyIcon} />
             <p>No posts yet. Be the first to share your support!</p>
-          </div>
+          </motion.div>
         ) : (
           <div className={styles.postsGrid}>
-            {posts.map((post) => (
-              <div key={post.id} className={styles.postCard}>
-                <div className={styles.postImage}>
-                  <img src={post.image_url} alt={post.caption || 'Community post'} />
-                </div>
-                <div className={styles.postContent}>
-                  <p className={styles.caption}>{post.caption || 'No caption'}</p>
-                  <div className={styles.postMeta}>
-                    <span className={styles.author}>@{post.author.username}</span>
-                    <button 
-                      className={styles.likeBtn}
-                      onClick={() => handleLike(post.id)}
-                    >
-                      ❤️ {post.likes_count}
-                    </button>
+            <AnimatePresence>
+              {posts.map((post, index) => (
+                <motion.div 
+                  key={post.id} 
+                  className={styles.postCard}
+                  variants={slideInLeft}
+                  initial="initial"
+                  animate="animate"
+                  custom={index}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                >
+                  <div className={styles.postImage}>
+                    <img src={post.image_url} alt={post.caption || 'Community post'} />
                   </div>
-                </div>
-              </div>
-            ))}
+                  <div className={styles.postContent}>
+                    <p className={styles.caption}>{post.caption || 'No caption'}</p>
+                    <div className={styles.postMeta}>
+                      <span className={styles.author}>@{post.author.username}</span>
+                      <motion.button 
+                        className={styles.likeBtn}
+                        onClick={() => handleLike(post.id)}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Heart size={14} />
+                        {post.likes_count}
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

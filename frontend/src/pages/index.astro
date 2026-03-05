@@ -5,6 +5,8 @@ import LeagueTable from '../components/premier-league/LeagueTable';
 import ManchesterMatches from '../components/premier-league/ManchesterMatches';
 import HistoricalStats from '../components/premier-league/HistoricalStats';
 import MatchPredictor from '../components/predictor/MatchPredictor';
+import ApiComparison from '../components/premier-league/ApiComparison';
+import ApiSpecificDashboard from '../components/widgets/ApiSpecificDashboard';
 ---
 
 <Layout title="5 Games in a Row | Manchester United Haircut Challenge">
@@ -16,6 +18,8 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
         <span>🎯 Target: 5 consecutive wins</span>
       </div>
     </section>
+
+    <ApiSpecificDashboard client:load />
 
     <section class="main-grid">
       <div class="grid-item counter-section">
@@ -38,6 +42,10 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
       
       <div class="grid-item stats-section">
         <HistoricalStats client:load />
+      </div>
+      
+      <div class="grid-item api-comparison-section">
+        <ApiComparison client:load />
       </div>
     </section>
 
@@ -62,11 +70,7 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
   .hero {
     text-align: center;
     padding: var(--space-3xl) var(--space-xl);
-    background: linear-gradient(135deg, 
-      var(--color-red) 0%, 
-      var(--color-red-dark) 50%,
-      #8B0000 100%
-    );
+    background: var(--theme-bg-gradient, linear-gradient(135deg, var(--color-red) 0%, var(--color-red-dark) 50%, #8B0000 100%));
     border-radius: var(--radius-2xl);
     margin-bottom: var(--space-2xl);
     position: relative;
@@ -212,49 +216,16 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
   .standings-container {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-xl);
     min-height: auto;
     height: auto;
     max-height: none;
     width: 100%;
   }
 
-  .grid-item {
-    min-width: 0;
-    animation: fadeInUp 0.6s ease forwards;
-    opacity: 0;
-  }
-
-  .grid-item:nth-child(1) { animation-delay: 0.1s; }
-  .grid-item:nth-child(2) { animation-delay: 0.2s; }
-  .grid-item:nth-child(3) { animation-delay: 0.3s; }
-  .grid-item:nth-child(4) { animation-delay: 0.4s; }
-  .grid-item:nth-child(5) { animation-delay: 0.5s; }
-
-  .standings-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xl);
-    min-height: 600px;
-    height: auto;
-    max-height: none;
-    grid-column: 1 / -1;
-    margin-bottom: var(--space-xl);
-  }
-
-  .standings-container .grid-item {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
   .standings-container .matches-section {
     flex: 0 0 auto;
-    max-height: 45vh;
     min-height: 350px;
-    overflow: hidden;
     width: 100%;
   }
 
@@ -268,13 +239,7 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
   }
 
   @media (max-width: 768px) {
-    .standings-container {
-      min-height: auto;
-      max-height: none;
-    }
-    
     .standings-container .matches-section {
-      max-height: 50vh;
       min-height: 300px;
     }
     
@@ -284,10 +249,6 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
   }
 
   @media (max-width: 480px) {
-    .standings-container {
-      min-height: auto;
-    }
-    
     .standings-container .matches-section {
       min-height: 280px;
     }
@@ -304,6 +265,10 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
   }
 
   .stats-section {
+    width: 100%;
+  }
+
+  .api-comparison-section {
     width: 100%;
   }
 
@@ -328,16 +293,16 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
     right: 0;
     height: 4px;
     background: linear-gradient(90deg, 
-      var(--color-red) 0%, 
-      var(--color-gold) 50%, 
-      var(--color-red) 100%
+      var(--theme-primary, var(--color-red)) 0%, 
+      var(--theme-secondary, var(--color-gold)) 50%, 
+      var(--theme-primary, var(--color-red)) 100%
     );
     background-size: 200% 100%;
     animation: shimmer 3s ease infinite;
   }
 
   .about h2 {
-    color: var(--color-red);
+    color: var(--theme-primary, var(--color-red));
     margin-bottom: var(--space-xl);
     text-align: center;
     font-size: 2rem;
@@ -371,7 +336,7 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
   .hashtag {
     font-family: var(--font-display);
     font-size: 1.5rem;
-    color: var(--color-red);
+    color: var(--theme-primary, var(--color-red));
     font-weight: 700;
     letter-spacing: 0.15em;
     margin-top: var(--space-xl);

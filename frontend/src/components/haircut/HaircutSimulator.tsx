@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Scissors, Calendar, Play } from 'lucide-react';
+import { scaleIn, staggerItem } from '../ui/animationConstants';
 import styles from './HaircutSimulator.module.css';
 
 interface HairStyleProps {
@@ -106,25 +109,47 @@ export default function HaircutSimulator() {
   };
 
   return (
-    <div className={styles.simulator}>
-      <div className={styles.header}>
-        <h2>✂️ Haircut Simulator</h2>
-        <p>See how Frank's hair has grown over time</p>
-      </div>
+    <motion.div 
+      className={styles.simulator}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div 
+        className={styles.header}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Scissors className={styles.headerIcon} size={24} />
+        <h2>Haircut Simulator</h2>
+        <p>See how Frank&apos;s hair has grown over time</p>
+      </motion.div>
 
-      <div className={styles.visual}>
+      <motion.div 
+        className={styles.visual}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+      >
         <HairVisual days={days} />
-      </div>
+      </motion.div>
 
-      <div className={styles.controls}>
+      <motion.div 
+        className={styles.controls}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
         <div className={styles.sliderContainer}>
-          <input
+          <motion.input
             type="range"
             min="0"
             max="600"
             value={days}
             onChange={handleSliderChange}
             className={styles.slider}
+            whileHover={{ scale: 1.02 }}
           />
           <div className={styles.sliderLabels}>
             <span>Day 0</span>
@@ -144,51 +169,103 @@ export default function HaircutSimulator() {
               onChange={handleSliderChange}
               className={styles.numberInput}
             />
-            <button 
+            <motion.button 
               onClick={() => animateToDay(500)}
               className={styles.presetBtn}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
+              <Calendar size={14} />
               500 (Current)
-            </button>
+            </motion.button>
           </div>
         </div>
 
         <div className={styles.presetButtons}>
-          <button onClick={() => animateToDay(100)} className={styles.presetBtn}>
+          <motion.button 
+            onClick={() => animateToDay(100)} 
+            className={styles.presetBtn}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Play size={14} />
             100 days
-          </button>
-          <button onClick={() => animateToDay(250)} className={styles.presetBtn}>
+          </motion.button>
+          <motion.button 
+            onClick={() => animateToDay(250)} 
+            className={styles.presetBtn}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Play size={14} />
             250 days
-          </button>
-          <button onClick={() => animateToDay(400)} className={styles.presetBtn}>
+          </motion.button>
+          <motion.button 
+            onClick={() => animateToDay(400)} 
+            className={styles.presetBtn}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Play size={14} />
             400 days
-          </button>
-          <button onClick={() => animateToDay(500)} className={styles.presetBtn}>
+          </motion.button>
+          <motion.button 
+            onClick={() => animateToDay(500)} 
+            className={styles.presetBtn}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Calendar size={14} />
             500 days
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      <div className={styles.stats}>
-        <div className={styles.stat}>
+      <motion.div 
+        className={styles.stats}
+        variants={staggerItem}
+        initial="initial"
+        animate="animate"
+      >
+        <motion.div 
+          className={styles.stat}
+          variants={scaleIn}
+          whileHover={{ scale: 1.05 }}
+        >
           <span className={styles.statValue}>{days}</span>
           <span className={styles.statLabel}>Days waiting</span>
-        </div>
-        <div className={styles.stat}>
+        </motion.div>
+        <motion.div 
+          className={styles.stat}
+          variants={scaleIn}
+          whileHover={{ scale: 1.05 }}
+        >
           <span className={styles.statValue}>{(days / 365).toFixed(1)}</span>
           <span className={styles.statLabel}>Years</span>
-        </div>
-        <div className={styles.stat}>
+        </motion.div>
+        <motion.div 
+          className={styles.stat}
+          variants={scaleIn}
+          whileHover={{ scale: 1.05 }}
+        >
           <span className={styles.statValue}>{Math.floor(days / 7)}</span>
           <span className={styles.statLabel}>Weeks</span>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      {days >= 500 && (
-        <div className={styles.message}>
-          <p>Over 500 days! Frank's hair has grown tremendously. Will the haircut ever happen?</p>
-        </div>
-      )}
-    </div>
+      <AnimatePresence>
+        {days >= 500 && (
+          <motion.div 
+            className={styles.message}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <p>Over 500 days! Frank&apos;s hair has grown tremendously. Will the haircut ever happen?</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

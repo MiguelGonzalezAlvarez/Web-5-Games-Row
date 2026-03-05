@@ -1,0 +1,55 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.apiBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  border: 1px solid;
+  margin-bottom: var(--space-lg);
+  transition: all var(--transition-normal);
+}
+
+.badgeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-primary);
+}
+
+.badgeText {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--theme-primary);
+}
+
+.content {
+  width: 100%;
+}
+
+.providerIndicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 1000;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .apiBadge {
+    padding: var(--space-xs) var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  .badgeText {
+    font-size: 0.65rem;
+  }
+}

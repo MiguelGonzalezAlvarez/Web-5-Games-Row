@@ -7,6 +7,7 @@ from app.schemas.football import (
     ChallengeStatus,
 )
 from app.services.football_service import football_service, set_demo_mode, is_demo_mode, set_provider, get_current_provider
+from app.services.football_providers import get_all_providers_metadata, get_provider
 
 router = APIRouter()
 
@@ -14,20 +15,41 @@ router = APIRouter()
 @router.get("/providers")
 async def get_providers():
     """Get available football data providers"""
+    # Get metadata for current provider
+    current_provider = get_current_provider()
+    try:
+        current_metadata = await current_provider.get_metadata()
+    except:
+        current_metadata = {}
+    
     return {
         "providers": [
-            {"name": "football-data.org", "description": "football-data.org (Default - Most accurate data)", "is_default": True},
+            {"name": "api-football", "description": "API-Football (Recommended - 100 req/day free, historical 2024/25)", "is_default": True},
+            {"name": "openfootball", "description": "OpenFootball (Free - GitHub-based 2025/26, no API key)", "is_default": False},
+            {"name": "football-data.org", "description": "football-data.org (Free tier - Limited)", "is_default": False},
             {"name": "thesportsdb", "description": "TheSportsDB (Free - May have limited data)", "is_default": False},
             {"name": "demo", "description": "Demo Mode (Static sample data)", "is_default": False},
         ],
-        "current_provider": get_current_provider().name
+        "current_provider": current_provider.name,
+        "current_metadata": current_metadata
+    }
+
+
+@router.get("/providers/metadata")
+async def get_providers_metadata():
+    """Get metadata for all providers (for comparison tab)"""
+    all_metadata = await get_all_providers_metadata()
+    current_provider = get_current_provider()
+    return {
+        "providers": all_metadata,
+        "current_provider": current_provider.name
     }
 
 
 @router.post("/providers/{provider_name}")
 async def change_provider(provider_name: str):
     """Change the football data provider"""
-    valid_providers = ["thesportsdb", "football-data.org", "demo"]
+    valid_providers = ["api-football", "openfootball", "thesportsdb", "football-data.org", "demo"]
     
     if provider_name.lower() not in valid_providers:
         raise HTTPException(
@@ -53,6 +75,12 @@ async def change_provider(provider_name: str):
 async def get_standings():
     """Get Premier League standings"""
     return await football_service.get_standings()
+
+
+@router.get("/standings/history")
+async def get_standings_history():
+    """Get position history over time for Manchester United"""
+    return await football_service.get_position_history()
 
 
 @router.get("/matches", response_model=list[PremierLeagueMatch])

@@ -1,4 +1,4 @@
-# Components
+// Components
 export { default as HaircutCounter } from './haircut/HaircutCounter';
 export { default as HaircutSimulator } from './haircut/HaircutSimulator';
 export { default as LeagueTable } from './premier-league/LeagueTable';

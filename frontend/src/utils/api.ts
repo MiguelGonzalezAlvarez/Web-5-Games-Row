@@ -175,6 +175,57 @@ export const api = {
     return fetchAPI<any>('/football/streak/current');
   },
   
+  getStreak: async () => {
+    try {
+      const current = await fetchAPI<any>('/football/streak/current');
+      const history = await fetchAPI<any>('/football/streak/history');
+      
+      return {
+        currentStreak: current?.current_streak || 0,
+        longestStreak: Math.max(
+          current?.longest_streak || 0,
+          history?.top_streaks?.[0]?.length || 0,
+          current?.current_streak || 0
+        ),
+        longestStreakSeason: history?.top_streaks?.[0]?.season,
+        wins: current?.wins || 0,
+        draws: current?.draws || 0,
+        losses: current?.losses || 0,
+        recentForm: current?.recent_form || [],
+        totalMatches: current?.total_matches || 0,
+      };
+    } catch (err) {
+      return {
+        currentStreak: 0,
+        longestStreak: 0,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        recentForm: [],
+        totalMatches: 0,
+      };
+    }
+  },
+  
+  getPositionHistory: async () => {
+    try {
+      const data = await fetchAPI<any>('/football/standings/history');
+      return {
+        positions: data?.positions || [],
+        currentPosition: data?.current_position,
+        bestPosition: data?.best_position,
+        worstPosition: data?.worst_position,
+      };
+    } catch (err) {
+      return {
+        positions: [],
+        currentPosition: null,
+        bestPosition: null,
+        worstPosition: null,
+      };
+    }
+  },
+  
   getChallengeStatus: async (): Promise<ChallengeStatus> => {
     return fetchAPI<ChallengeStatus>('/football/challenge/status');
   },
@@ -238,6 +289,10 @@ export const api = {
   // Data providers
   getProviders: async (): Promise<ProvidersResponse> => {
     return fetchAPI<ProvidersResponse>('/football/providers');
+  },
+  
+  getProvidersMetadata: async () => {
+    return fetchAPI<any>('/football/providers/metadata');
   },
   
   setProvider: async (providerName: string) => {

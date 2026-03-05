@@ -4,7 +4,8 @@ import { api } from '../../utils/api';
 import type { Standing } from '../../utils/types';
 import { Trophy, Radio, Info } from 'lucide-react';
 import { SkeletonList } from '../ui/Skeleton';
-import { staggerItem, buttonTap } from '../ui/animationConstants';
+import { ErrorState } from '../ui/ErrorState';
+import { staggerItem } from '../ui/animationConstants';
 import styles from './LeagueTable.module.css';
 
 const MANCHESTER_UNITED_NAMES = ['Manchester United', 'Man United'];
@@ -12,7 +13,7 @@ const MANCHESTER_UNITED_NAMES = ['Manchester United', 'Man United'];
 export default function LeagueTable() {
   const [standings, setStandings] = useState<Standing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [provider, setProvider] = useState<string>('unknown');
 
   const isManchesterUnited = (team: Standing) => {
@@ -26,23 +27,25 @@ export default function LeagueTable() {
     return team.played_games > 0 || team.points > 0;
   };
 
-  useEffect(() => {
-    async function fetchStandings() {
-      try {
-        const [data, providersData] = await Promise.all([
-          api.getStandings(),
-          api.getProviders()
-        ]);
-        setStandings(data);
-        setProvider(providersData.current_provider);
-      } catch (err) {
-        setError('Failed to load standings');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+  const fetchStandings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [data, providersData] = await Promise.all([
+        api.getStandings(),
+        api.getProviders()
+      ]);
+      setStandings(data);
+      setProvider(providersData.current_provider);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to load standings'));
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     fetchStandings();
     const interval = setInterval(fetchStandings, 300000);
     return () => clearInterval(interval);
@@ -92,13 +95,22 @@ export default function LeagueTable() {
     return (
       <div className={styles.table}>
         <motion.div 
-          className={styles.errorContainer}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          className={styles.header}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
         >
-          <Info size={48} className={styles.errorIcon} />
-          <p>{error}</p>
+          <div className={styles.headerTitle}>
+            <Trophy className={styles.headerIcon} size={22} />
+            <h3>Premier League</h3>
+          </div>
         </motion.div>
+        <ErrorState 
+          title="Unable to load standings"
+          message="We couldn't get the latest Premier League standings. Please try again."
+          error={error}
+          onRetry={fetchStandings}
+        />
       </div>
     );
   }
@@ -168,7 +180,7 @@ export default function LeagueTable() {
                     <td className={styles.position}>{team.position}</td>
                     <td className={styles.team}>
                       <img 
-                        src={team.team_crest || '/placeholder-badge.png'} 
+                        src={team.team_crest || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23DA291C"/></svg>'} 
                         alt={team.team_name}
                         className={styles.crest}
                         onError={(e) => {

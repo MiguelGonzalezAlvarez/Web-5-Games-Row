@@ -103,6 +103,13 @@ class CurrentStreak(BaseModel):
     streak_start_date: Optional[str] = None
     last_match_result: Optional[str] = None
     next_match: Optional[dict] = None
+    # Extended fields for dashboard
+    wins: int = 0
+    draws: int = 0
+    losses: int = 0
+    recent_form: list[str] = []
+    total_matches: int = 0
+    longest_streak: int = 0
 
 
 class ChallengeStatus(BaseModel):

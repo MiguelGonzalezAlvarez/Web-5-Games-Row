@@ -1,16 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../utils/api';
+import { useToast } from './ui/Toast';
 import { 
   Database, 
   CheckCircle2, 
-  AlertCircle, 
   Loader2, 
-  X,
   Globe,
-  Gamepad2
+  Gamepad2,
 } from 'lucide-react';
 import styles from './DemoModeToggle.module.css';
+
+interface ProviderMetadata {
+  name: string;
+  is_free: boolean;
+  season: string;
+  has_logos: boolean;
+  has_standings: boolean;
+  has_finished_matches: boolean;
+  description: string;
+}
 
 interface Provider {
   name: string;
@@ -21,21 +30,17 @@ interface Provider {
 interface ProvidersResponse {
   providers: Provider[];
   current_provider: string;
+  current_metadata?: ProviderMetadata;
 }
-
-type ToastType = 'success' | 'error' | 'loading';
 
 export default function DemoModeToggle() {
   const [isOpen, setIsOpen] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [currentProvider, setCurrentProvider] = useState<string>('');
+  const [currentMetadata, setCurrentMetadata] = useState<ProviderMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState<ToastType>('success');
-  const [dataVerified, setDataVerified] = useState(false);
-  const toastRef = useRef<HTMLDivElement>(null);
+  const toast = useToast();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,9 +49,6 @@ export default function DemoModeToggle() {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-      }
-      if (toastRef.current && !toastRef.current.contains(event.target as Node)) {
-        // Don't close toast on outside click - it should stay until provider changes
       }
     };
     
@@ -59,6 +61,7 @@ export default function DemoModeToggle() {
       const data = await api.getProviders() as ProvidersResponse;
       setProviders(data.providers);
       setCurrentProvider(data.current_provider);
+      setCurrentMetadata(data.current_metadata || null);
     } catch (err) {
       console.error('Failed to fetch providers:', err);
     } finally {
@@ -75,18 +78,14 @@ export default function DemoModeToggle() {
     setSwitching(true);
     setIsOpen(false);
     
+    const loadingToastId = toast.info('Verifying data...', 'Switching provider', { duration: 0 });
+    
     try {
-      // 1. Change provider in backend
       const response = await api.setProvider(providerName);
       
       if (!response.success) {
         throw new Error(response.message || 'Failed to change provider');
       }
-      
-      // 2. Verify data is coming through
-      setToastType('loading');
-      setToastMessage('Verifying data...');
-      setShowToast(true);
       
       const verificationData = await api.getStandings();
       
@@ -94,35 +93,31 @@ export default function DemoModeToggle() {
         throw new Error('No data received from new provider');
       }
       
-      // 3. Show success
+      toast.removeToast(loadingToastId);
       const displayName = getProviderDisplayName(providerName);
-      setToastType('success');
-      setToastMessage(`Now using: ${displayName}`);
-      setDataVerified(true);
+      toast.success('Provider Changed', `Now using: ${displayName}`);
       setCurrentProvider(providerName);
       
-      // 4. Reload after a short delay to let user see the success message
+      const providersData = await api.getProviders() as ProvidersResponse;
+      setCurrentMetadata(providersData.current_metadata || null);
+      
       setTimeout(() => {
         window.location.reload();
       }, 2000);
       
     } catch (err) {
       console.error('Failed to change provider:', err);
-      setToastType('error');
-      setToastMessage('Failed to change provider - using previous');
-      setDataVerified(false);
+      toast.removeToast(loadingToastId);
+      toast.error('Provider Change Failed', 'Using previous provider');
     } finally {
       setSwitching(false);
     }
   };
 
-  const closeToast = () => {
-    setShowToast(false);
-    setDataVerified(false);
-  };
-
   const getProviderDisplayName = (name: string) => {
     switch (name) {
+      case 'api-football': return 'API-Football';
+      case 'openfootball': return 'OpenFootball';
       case 'football-data.org': return 'Football-Data.org';
       case 'thesportsdb': return 'TheSportsDB';
       case 'demo': return 'Demo Mode';
@@ -132,6 +127,8 @@ export default function DemoModeToggle() {
 
   const getProviderIcon = (name: string) => {
     switch (name) {
+      case 'api-football': return <Globe size={20} />;
+      case 'openfootball': return <Globe size={20} />;
       case 'football-data.org': return <Globe size={20} />;
       case 'thesportsdb': return <Database size={20} />;
       case 'demo': return <Gamepad2 size={20} />;
@@ -164,7 +161,7 @@ export default function DemoModeToggle() {
             {getProviderDisplayName(currentProvider)}
           </span>
           <span className={styles.status}>
-            {switching ? 'Changing...' : 'Click to switch'}
+            {switching ? 'Changing...' : (currentMetadata?.season || 'Click to switch')}
           </span>
         </motion.button>
         
@@ -206,32 +203,6 @@ export default function DemoModeToggle() {
           )}
         </AnimatePresence>
       </div>
-      
-      <AnimatePresence>
-        {showToast && (
-          <motion.div
-            ref={toastRef}
-            className={`${styles.toast} ${styles[`toast${toastType.charAt(0).toUpperCase() + toastType.slice(1)}`]}`}
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className={styles.toastContent}>
-              {toastType === 'success' && <CheckCircle2 size={20} />}
-              {toastType === 'error' && <AlertCircle size={20} />}
-              {toastType === 'loading' && <Loader2 className={styles.spinning} size={20} />}
-              <span className={styles.toastMessage}>{toastMessage}</span>
-              {dataVerified && (
-                <span className={styles.verifiedBadge}>✓ Data Verified</span>
-              )}
-            </div>
-            <button className={styles.toastClose} onClick={closeToast}>
-              <X size={16} />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

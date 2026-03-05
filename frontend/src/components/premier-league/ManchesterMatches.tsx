@@ -4,7 +4,7 @@ import { api } from '../../utils/api';
 import type { Match } from '../../utils/types';
 import { History, Trophy, ArrowUp, ArrowDown, Minus, Info, Loader2 } from 'lucide-react';
 import { SkeletonList } from '../ui/Skeleton';
-import { slideInLeft, staggerItem, buttonTap } from '../ui/animationConstants';
+import { slideInLeft, staggerItem } from '../ui/animationConstants';
 import styles from './ManchesterMatches.module.css';
 
 const MANCHESTER_UNITED_NAMES = ['Manchester United', 'Man United'];
@@ -24,6 +24,8 @@ export default function ManchesterMatches() {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23DA291C"/></svg>';
   };
+
+  const defaultCrest = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23DA291C"/></svg>';
 
   useEffect(() => {
     async function fetchMatches() {
@@ -162,7 +164,7 @@ export default function ManchesterMatches() {
                   whileHover={{ scale: 1.05 }}
                 >
                   <img 
-                    src={match.home_team_crest || ''} 
+                    src={match.home_team_crest || defaultCrest} 
                     alt={match.home_team} 
                     className={styles.crest}
                     onError={handleImageError}
@@ -181,7 +183,7 @@ export default function ManchesterMatches() {
                   whileHover={{ scale: 1.05 }}
                 >
                   <img 
-                    src={match.away_team_crest || ''} 
+                    src={match.away_team_crest || defaultCrest} 
                     alt={match.away_team} 
                     className={styles.crest}
                     onError={handleImageError}

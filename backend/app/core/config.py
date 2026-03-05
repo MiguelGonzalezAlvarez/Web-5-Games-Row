@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -11,10 +12,17 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite:///./5gamesrow.db"
     
-    # Football API (football-data.org)
-    FOOTBALL_API_KEY: str = "YOUR_API_KEY_HERE"
+    # Football Data Provider (default: api-football)
+    FOOTBALL_DATA_PROVIDER: str = "api-football"
+    
+    # football-data.org API (optional - for fallback)
+    FOOTBALL_API_KEY: str = ""
     FOOTBALL_API_BASE_URL: str = "https://api.football-data.org/v4"
-    FOOTBALL_DATA_PROVIDER: str = "football-data.org"  # Options: thesportsdb, football-data.org, demo (Default: football-data.org - most accurate)
+    
+    # api-football.com API (get free key at https://www.api-football.com)
+    # 100 requests/day on free tier
+    API_FOOTBALL_KEY: str = ""
+    API_FOOTBALL_BASE_URL: str = "https://v3.football.api-sports.io"
     
     # Redis (optional)
     REDIS_URL: str = "redis://localhost:6379"
@@ -30,6 +38,9 @@ class Settings(BaseSettings):
     # Challenge dates
     HAIRCUT_CHALLENGE_START_DATE: str = "2024-10-05"
     MANCHESTER_UNITED_TEAM_ID: int = 66  # ID from football-data.org
+    
+    # API-Football uses different team ID for Manchester United
+    API_FOOTBALL_MANCHESTER_UNITED_ID: int = 33
     
     class Config:
         env_file = ".env"

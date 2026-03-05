@@ -2,26 +2,29 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../utils/api';
 import type { ChallengeStatus } from '../../utils/types';
+import { ErrorState } from '../ui/ErrorState';
 import styles from './HaircutCounter.module.css';
 
 export default function HaircutCounter() {
   const [status, setStatus] = useState<ChallengeStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchStatus = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.getChallengeStatus();
+      setStatus(data);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to load challenge status'));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchStatus() {
-      try {
-        const data = await api.getChallengeStatus();
-        setStatus(data);
-      } catch (err) {
-        setError('Failed to load challenge status');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchStatus();
     const interval = setInterval(fetchStatus, 60000);
     return () => clearInterval(interval);
@@ -46,7 +49,12 @@ export default function HaircutCounter() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className={styles.error}>{error || 'Unable to load'}</div>
+        <ErrorState 
+          title={error ? "Unable to load challenge" : "No data available"}
+          message={error ? "We couldn't get the latest challenge status. Please try again." : "Challenge status data is currently unavailable."}
+          error={error}
+          onRetry={fetchStatus}
+        />
       </motion.div>
     );
   }

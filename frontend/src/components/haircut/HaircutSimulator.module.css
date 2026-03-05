@@ -10,7 +10,13 @@
   margin-bottom: var(--space-xl);
 }
 
+.headerIcon {
+  color: var(--color-red);
+  margin-right: var(--space-sm);
+}
+
 .header h2 {
+  display: inline;
   color: var(--color-red);
   margin-bottom: var(--space-sm);
 }
@@ -134,6 +140,9 @@
   font-weight: 600;
   color: var(--color-gray-600);
   transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .presetBtn:hover {

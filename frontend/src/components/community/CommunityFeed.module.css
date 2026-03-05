@@ -23,13 +23,30 @@
   gap: var(--space-md);
 }
 
+.inputWrapper, .textareaWrapper {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-gray-400);
+}
+
 .input, .textarea {
   width: 100%;
   padding: var(--space-md);
+  padding-left: calc(var(--space-md) + 26px);
   border: 2px solid var(--color-gray-200);
   border-radius: var(--radius-md);
   font-size: 1rem;
   transition: border-color var(--transition-fast);
+}
+
+.textarea {
+  padding-left: var(--space-md);
 }
 
 .input:focus, .textarea:focus {
@@ -52,6 +69,10 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
 }
 
 .submitBtn:hover:not(:disabled) {
@@ -150,6 +171,11 @@
   box-shadow: var(--shadow-sm);
 }
 
+.emptyIcon {
+  color: var(--color-gray-400);
+  margin-bottom: var(--space-md);
+}
+
 .empty p {
   color: var(--color-gray-500);
 }
@@ -158,6 +184,23 @@
   text-align: center;
   padding: var(--space-2xl);
   color: var(--color-gray-500);
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 640px) {

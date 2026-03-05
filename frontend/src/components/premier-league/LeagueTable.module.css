@@ -178,12 +178,17 @@ th {
   top: 0;
   background: white;
   z-index: 10;
+  vertical-align: middle;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 tbody tr {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: fadeInRow 0.5s ease forwards;
   opacity: 0;
+  height: 52px;
+  box-sizing: border-box;
 }
 
 tbody tr:hover {
@@ -232,6 +237,9 @@ td {
   text-align: center;
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
+  vertical-align: middle !important;
+  height: 52px;
+  box-sizing: border-box;
 }
 
 tr:last-child td {
@@ -253,6 +261,9 @@ tr:last-child td {
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--color-gray-400);
+  vertical-align: middle !important;
+  text-align: center;
+  line-height: 1;
   transition: all 0.3s ease;
 }
 
@@ -269,6 +280,7 @@ tr:last-child td {
   align-items: center;
   gap: var(--space-md);
   padding-left: var(--space-lg) !important;
+  vertical-align: middle;
 }
 
 .crest {
@@ -280,6 +292,7 @@ tr:last-child td {
   padding: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 tr:hover .crest {
@@ -298,6 +311,11 @@ tr:hover .crest {
   font-size: 0.9rem;
   color: var(--color-gray-500);
   font-weight: 500;
+  vertical-align: middle !important;
+  text-align: center;
+  line-height: 1;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .points {
@@ -306,11 +324,17 @@ tr:hover .crest {
   font-size: 1.15rem;
   color: var(--color-black);
   background: var(--color-gray-100);
-  padding: var(--space-xs) var(--space-sm);
+  padding: 6px 10px;
   border-radius: var(--radius-md);
   min-width: 40px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle !important;
+  text-align: center;
+  line-height: 1;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 tr:hover .points {

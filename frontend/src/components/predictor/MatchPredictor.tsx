@@ -8,7 +8,7 @@ import {
   Swords, 
   RotateCcw
 } from 'lucide-react';
-import { scaleIn, buttonTap } from '../ui/animationConstants';
+import { scaleIn } from '../ui/animationConstants';
 import styles from './MatchPredictor.module.css';
 
 interface Prediction {

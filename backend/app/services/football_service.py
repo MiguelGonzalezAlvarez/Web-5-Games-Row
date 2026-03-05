@@ -111,8 +111,9 @@ def _has_valid_matches(matches: List[PremierLeagueMatch]) -> bool:
     """Check if matches have valid data."""
     if not matches:
         return False
-    # Check if any match has results
-    return any(m.status == "FINISHED" for m in matches)
+    # Check if any match has results OR is scheduled (future matches)
+    # Accept matches that have scores (either FINISHED or SCHEDULED with scores)
+    return any(m.home_score is not None and m.away_score is not None for m in matches)
 
 
 class FootballAPIService:
@@ -125,42 +126,37 @@ class FootballAPIService:
             logger.info("Returning demo standings")
             return DEMO_STANDINGS
         
-        cache_key = f"standings_{get_current_provider_name()}"
+        # Use the explicitly set provider (respect user's choice)
+        provider_name = get_current_provider_name()
+        cache_key = f"standings_{provider_name}"
         
         if use_cache:
             cached = cache.get(cache_key)
             if cached:
-                logger.info("Returning cached standings")
+                logger.info(f"Returning cached standings for {provider_name}")
                 return cached
         
-        # Try with fallback
-        last_error = None
-        for provider_name in PROVIDER_FALLBACK_ORDER:
-            try:
-                if provider_name == "demo":
-                    logger.info("Falling back to demo standings")
-                    return DEMO_STANDINGS
+        # Try ONLY the explicitly set provider (no fallback to others)
+        try:
+            if provider_name == "demo":
+                return DEMO_STANDINGS
+            
+            provider = get_provider(provider_name)
+            standings = await provider.get_standings()
+            
+            # Validate data
+            if _has_valid_data(standings):
+                cache.set(cache_key, standings, ttl_seconds=300)
+                logger.info(f"Got {len(standings)} standings from {provider_name}")
+                return standings
+            else:
+                logger.warning(f"Provider {provider_name} returned invalid standings data")
                 
-                provider = get_provider(provider_name)
-                standings = await provider.get_standings()
-                
-                # Validate data
-                if _has_valid_data(standings):
-                    cache.set(cache_key, standings, ttl_seconds=300)
-                    logger.info(f"Got {len(standings)} standings from {provider_name}")
-                    return standings
-                else:
-                    logger.warning(f"Provider {provider_name} returned invalid standings data")
-                    last_error = "Invalid data"
-                    continue
-                    
-            except Exception as e:
-                logger.warning(f"Provider {provider_name} failed: {e}")
-                last_error = str(e)
-                continue
+        except Exception as e:
+            logger.warning(f"Provider {provider_name} failed: {e}")
         
-        # All providers failed, return demo
-        logger.warning("All providers failed, returning demo standings")
+        # Only fallback to demo if the explicitly set provider fails
+        logger.warning(f"Provider {provider_name} failed, returning demo standings")
         return DEMO_STANDINGS
 
     async def get_matches(self, matchday: Optional[int] = None) -> List[PremierLeagueMatch]:
@@ -170,40 +166,36 @@ class FootballAPIService:
             logger.info("Returning demo matches")
             return DEMO_MATCHES
         
-        cache_key = f"matches_{get_current_provider_name()}_{matchday or 'all'}"
+        # Use the explicitly set provider (respect user's choice)
+        provider_name = get_current_provider_name()
+        cache_key = f"matches_{provider_name}_{matchday or 'all'}"
         
         cached = cache.get(cache_key)
         if cached:
+            logger.info(f"Returning cached matches for {provider_name}")
             return cached
         
-        # Try with fallback
-        last_error = None
-        for provider_name in PROVIDER_FALLBACK_ORDER:
-            try:
-                if provider_name == "demo":
-                    logger.info("Falling back to demo matches")
-                    return DEMO_MATCHES
+        # Try ONLY the explicitly set provider (no fallback to others)
+        try:
+            if provider_name == "demo":
+                return DEMO_MATCHES
+            
+            provider = get_provider(provider_name)
+            matches = await provider.get_matches(matchday=matchday)
+            
+            # Validate data
+            if _has_valid_matches(matches):
+                cache.set(cache_key, matches, ttl_seconds=180)
+                logger.info(f"Got {len(matches)} matches from {provider_name}")
+                return matches
+            else:
+                logger.warning(f"Provider {provider_name} returned invalid matches data")
                 
-                provider = get_provider(provider_name)
-                matches = await provider.get_matches(matchday=matchday)
-                
-                # Validate data
-                if _has_valid_matches(matches):
-                    cache.set(cache_key, matches, ttl_seconds=180)
-                    logger.info(f"Got {len(matches)} matches from {provider_name}")
-                    return matches
-                else:
-                    logger.warning(f"Provider {provider_name} returned invalid matches data")
-                    last_error = "Invalid data"
-                    continue
-                    
-            except Exception as e:
-                logger.warning(f"Provider {provider_name} failed: {e}")
-                last_error = str(e)
-                continue
+        except Exception as e:
+            logger.warning(f"Provider {provider_name} failed: {e}")
         
-        # All providers failed, return demo
-        logger.warning("All providers failed, returning demo matches")
+        # Only fallback to demo if the explicitly set provider fails
+        logger.warning(f"Provider {provider_name} failed, returning demo matches")
         return DEMO_MATCHES
 
     async def get_manchester_united_matches(self, limit: int = 10) -> List[PremierLeagueMatch]:
@@ -266,18 +258,26 @@ class FootballAPIService:
         
         A winning streak is consecutive wins starting from the most recent match.
         We look for: W-W-W-W-W (5 consecutive wins)
+        
+        Also calculates:
+        - Total wins, draws, losses
+        - Recent form (last 10 matches)
+        - Longest streak in the data
         """
         all_matches = await self.get_matches()
         
         # Filter to MU matches only
         mu_matches = [m for m in all_matches if m.is_manchester_united]
         
-        # Filter to finished matches only
-        finished_matches = [m for m in mu_matches if m.status == "FINISHED"]
+        # Filter to matches that have scores (either FINISHED or SCHEDULED with results)
+        matches_with_scores = [
+            m for m in mu_matches 
+            if m.home_score is not None and m.away_score is not None
+        ]
         
         # Sort by date descending (most recent first)
         sorted_matches = sorted(
-            finished_matches, 
+            matches_with_scores, 
             key=lambda x: x.utc_date, 
             reverse=True
         )
@@ -287,6 +287,23 @@ class FootballAPIService:
         streak_start_date = None
         last_result = None
         
+        # Calculate totals and recent form from all matches with scores
+        wins = 0
+        draws = 0
+        losses = 0
+        recent_form = []
+        
+        for match in sorted_matches[:10]:  # Last 10 matches
+            result = self._get_mu_result(match)
+            recent_form.append(result)
+            if result == "W":
+                wins += 1
+            elif result == "D":
+                draws += 1
+            else:
+                losses += 1
+        
+        # Calculate current streak (consecutive wins from most recent)
         for match in sorted_matches:
             result = self._get_mu_result(match)
             
@@ -301,6 +318,17 @@ class FootballAPIService:
             # We only need 5 wins for the challenge
             if current_streak >= 5:
                 break
+        
+        # Calculate longest streak from all matches
+        longest_streak = 0
+        temp_streak = 0
+        for match in sorted_matches:
+            result = self._get_mu_result(match)
+            if result == "W":
+                temp_streak += 1
+                longest_streak = max(longest_streak, temp_streak)
+            else:
+                temp_streak = 0
         
         last_result = "W" if current_streak > 0 else "L"
         
@@ -317,6 +345,12 @@ class FootballAPIService:
                 "home_team": next_match.home_team,
                 "away_team": next_match.away_team,
             } if next_match else None,
+            wins=wins,
+            draws=draws,
+            losses=losses,
+            recent_form=recent_form,
+            total_matches=wins + draws + losses,
+            longest_streak=longest_streak,
         )
 
     async def get_historical_streaks(self) -> dict:
@@ -400,6 +434,115 @@ class FootballAPIService:
                 streak_info.current_streak, motivational_messages[0]
             ),
         )
+
+    async def get_position_history(self) -> dict:
+        """Get Manchester United's position history over the season.
+        
+        Calculates the league position after each matchday based on actual results.
+        Returns array of { matchday, position, points, change }.
+        """
+        all_matches = await self.get_matches()
+        mu_matches = [m for m in all_matches if m.is_manchester_united]
+        
+        # Filter matches with scores
+        matches_with_scores = [
+            m for m in mu_matches
+            if m.home_score is not None and m.away_score is not None
+        ]
+        
+        # Sort by date
+        sorted_matches = sorted(matches_with_scores, key=lambda x: x.utc_date)
+        
+        # Get all matches to calculate standings at each matchday
+        all_league_matches = await self.get_matches()
+        
+        # Group matches by matchday
+        matchdays = {}
+        for match in all_league_matches:
+            if match.matchday:
+                if match.matchday not in matchdays:
+                    matchdays[match.matchday] = []
+                matchdays[match.matchday].append(match)
+        
+        # Calculate MU position after each matchday
+        position_history = []
+        
+        for matchday in sorted(matchdays.keys()):
+            matches = matchdays[matchday]
+            
+            # Check if MU has played in this matchday
+            mu_match = next((m for m in matches if m.is_manchester_united), None)
+            if not mu_match:
+                continue
+            
+            # Calculate points for all teams
+            team_points = {}
+            for match in matches:
+                # Home team
+                home_result = self._get_result_for_team(match, match.home_team, True)
+                if match.home_team not in team_points:
+                    team_points[match.home_team] = 0
+                team_points[match.home_team] += home_result
+                
+                # Away team
+                away_result = self._get_result_for_team(match, match.away_team, False)
+                if match.away_team not in team_points:
+                    team_points[match.away_team] = 0
+                team_points[match.away_team] += away_result
+            
+            # Sort teams by points
+            sorted_teams = sorted(team_points.items(), key=lambda x: x[1], reverse=True)
+            
+            # Find MU position
+            mu_position = 1
+            mu_team_name = "Manchester United"
+            for i, (team, points) in enumerate(sorted_teams):
+                if "manchester united" in team.lower():
+                    mu_position = i + 1
+                    mu_team_name = team
+                    break
+            
+            # Calculate change from previous position
+            change = "same"
+            if len(position_history) > 0:
+                prev_pos = position_history[-1]["position"]
+                if mu_position < prev_pos:
+                    change = "up"
+                elif mu_position > prev_pos:
+                    change = "down"
+            
+            position_history.append({
+                "matchday": matchday,
+                "position": mu_position,
+                "points": team_points.get(mu_team_name, 0),
+                "change": change,
+                "team": mu_team_name
+            })
+        
+        return {
+            "positions": position_history,
+            "current_position": position_history[-1]["position"] if position_history else None,
+            "best_position": min([p["position"] for p in position_history]) if position_history else None,
+            "worst_position": max([p["position"] for p in position_history]) if position_history else None,
+        }
+    
+    def _get_result_for_team(self, match, team_name: str, is_home: bool) -> int:
+        """Get points earned by a team from a match."""
+        if match.home_score is None or match.away_score is None:
+            return 0
+        
+        if is_home:
+            if match.home_score > match.away_score:
+                return 3
+            elif match.home_score == match.away_score:
+                return 1
+            return 0
+        else:
+            if match.away_score > match.home_score:
+                return 3
+            elif match.away_score == match.home_score:
+                return 1
+            return 0
 
 
 football_service = FootballAPIService()

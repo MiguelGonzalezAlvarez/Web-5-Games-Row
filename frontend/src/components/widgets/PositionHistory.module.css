@@ -1,0 +1,179 @@
+.container {
+  background: var(--theme-bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--shadow-md);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--theme-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.currentPosition {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chartContainer {
+  position: relative;
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.yAxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--theme-text-muted);
+  padding: 10px 0;
+  min-width: 20px;
+  text-align: right;
+}
+
+.chart {
+  flex: 1;
+  height: 120px;
+  background: var(--theme-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+  padding: var(--space-sm) 0;
+  border-top: 1px solid var(--theme-border);
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.7rem;
+  color: var(--theme-text-muted);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.championsLeagueDot {
+  background: #22C55E;
+}
+
+.europaLeagueDot {
+  background: #3B82F6;
+}
+
+.relegationDot {
+  background: #EF4444;
+}
+
+.stats {
+  display: flex;
+  gap: var(--space-xl);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--theme-text-muted);
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.statValue.best {
+  color: #22C55E;
+}
+
+.statValue.worst {
+  color: #EF4444;
+}
+
+.trendUp {
+  color: #22C55E;
+}
+
+.trendDown {
+  color: #EF4444;
+}
+
+.trendSame {
+  color: var(--theme-text-muted);
+}
+
+.championsLeague {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22C55E;
+}
+
+.europaLeague {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3B82F6;
+}
+
+.midTable {
+  background: rgba(107, 114, 128, 0.15);
+  color: #6B7280;
+}
+
+.relegation {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+
+@media (max-width: 480px) {
+  .legend {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .stats {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+}

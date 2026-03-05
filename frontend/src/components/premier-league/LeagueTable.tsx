@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../utils/api';
 import type { Standing } from '../../utils/types';
+import { Trophy, Radio, Info } from 'lucide-react';
+import { SkeletonList } from '../ui/Skeleton';
+import { staggerItem, buttonTap } from '../ui/animationConstants';
 import styles from './LeagueTable.module.css';
 
 const MANCHESTER_UNITED_NAMES = ['Manchester United', 'Man United'];
@@ -47,12 +51,20 @@ export default function LeagueTable() {
   if (loading) {
     return (
       <div className={styles.table}>
-        <div className={styles.header}>
-          <h3>Premier League Table</h3>
-          <div className={styles.headerRight}>
-            <span className={styles.updateBadge}>Loading</span>
+        <motion.div 
+          className={styles.header}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className={styles.headerTitle}>
+            <Trophy className={styles.headerIcon} size={22} />
+            <h3>Premier League</h3>
           </div>
-        </div>
+          <div className={styles.headerRight}>
+            <span className={styles.loadingBadge}>Loading</span>
+          </div>
+        </motion.div>
         <div className={styles.tableWrapper}>
           <table>
             <thead>
@@ -68,23 +80,7 @@ export default function LeagueTable() {
               </tr>
             </thead>
             <tbody>
-              {[...Array(10)].map((_, i) => (
-                <tr key={i} className={styles.skeletonRow}>
-                  <td><div className={styles.skeleton} style={{width: 24}} /></td>
-                  <td>
-                    <div className={styles.skeletonTeam}>
-                      <div className={styles.skeleton} style={{width: 32, height: 32, borderRadius: '50%'}} />
-                      <div className={styles.skeleton} style={{width: 100}} />
-                    </div>
-                  </td>
-                  <td><div className={styles.skeleton} style={{width: 20}} /></td>
-                  <td><div className={styles.skeleton} style={{width: 20}} /></td>
-                  <td><div className={styles.skeleton} style={{width: 20}} /></td>
-                  <td><div className={styles.skeleton} style={{width: 20}} /></td>
-                  <td><div className={styles.skeleton} style={{width: 30}} /></td>
-                  <td><div className={styles.skeleton} style={{width: 32}} /></td>
-                </tr>
-              ))}
+              <SkeletonList count={10} skeleton="table" />
             </tbody>
           </table>
         </div>
@@ -95,7 +91,14 @@ export default function LeagueTable() {
   if (error) {
     return (
       <div className={styles.table}>
-        <div className={styles.error}>{error}</div>
+        <motion.div 
+          className={styles.errorContainer}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <Info size={48} className={styles.errorIcon} />
+          <p>{error}</p>
+        </motion.div>
       </div>
     );
   }
@@ -105,15 +108,29 @@ export default function LeagueTable() {
 
   return (
     <div className={styles.table}>
-      <div className={styles.header}>
-        <h3>Premier League Table</h3>
+      <motion.div 
+        className={styles.header}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      >
+        <div className={styles.headerTitle}>
+          <Trophy className={styles.headerIcon} size={22} />
+          <h3>Premier League</h3>
+        </div>
         <div className={styles.headerRight}>
           {!showStats && (
-            <span className={styles.infoBadge}>Teams Only</span>
+            <span className={styles.infoBadge}>
+              <Info size={12} />
+              Teams Only
+            </span>
           )}
-          <span className={styles.updateBadge}>Live</span>
+          <span className={styles.liveBadge}>
+            <Radio size={12} className={styles.pulseIcon} />
+            Live
+          </span>
         </div>
-      </div>
+      </motion.div>
       
       <div className={styles.tableWrapper}>
         <table>
@@ -134,51 +151,64 @@ export default function LeagueTable() {
             </tr>
           </thead>
           <tbody>
-            {standings.map((team) => {
-              const isMU = isManchesterUnited(team);
-              return (
-                <tr 
-                  key={team.team_id}
-                  className={isMU ? styles.highlight : ''}
-                >
-                  <td className={styles.position}>{team.position}</td>
-                  <td className={styles.team}>
-                    <img 
-                      src={team.team_crest || '/placeholder-badge.png'} 
-                      alt={team.team_name}
-                      className={styles.crest}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23DA291C"/></svg>';
-                      }}
-                    />
-                    <span className={styles.teamName}>{team.team_short_name || team.team_name}</span>
-                  </td>
-                  {showStats && (
-                    <>
-                      <td className={styles.stat}>{team.played_games}</td>
-                      <td className={styles.stat}>{team.won}</td>
-                      <td className={styles.stat}>{team.draw}</td>
-                      <td className={styles.stat}>{team.lost}</td>
-                      <td className={styles.stat}>
-                        <span className={team.goal_difference >= 0 ? styles.positive : styles.negative}>
-                          {team.goal_difference > 0 ? '+' : ''}{team.goal_difference}
-                        </span>
-                      </td>
-                      <td className={styles.points}>{team.points}</td>
-                    </>
-                  )}
-                </tr>
-              );
-            })}
+            <AnimatePresence>
+              {standings.map((team, index) => {
+                const isMU = isManchesterUnited(team);
+                return (
+                  <motion.tr 
+                    key={team.team_id}
+                    className={isMU ? styles.highlight : ''}
+                    variants={staggerItem}
+                    initial="initial"
+                    animate="animate"
+                    custom={index}
+                    whileHover={{ scale: 1.01, backgroundColor: isMU ? 'rgba(218, 41, 28, 0.05)' : 'rgba(0, 0, 0, 0.02)' }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <td className={styles.position}>{team.position}</td>
+                    <td className={styles.team}>
+                      <img 
+                        src={team.team_crest || '/placeholder-badge.png'} 
+                        alt={team.team_name}
+                        className={styles.crest}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23DA291C"/></svg>';
+                        }}
+                      />
+                      <span className={styles.teamName}>{team.team_short_name || team.team_name}</span>
+                    </td>
+                    {showStats && (
+                      <>
+                        <td className={styles.stat}>{team.played_games}</td>
+                        <td className={styles.stat}>{team.won}</td>
+                        <td className={styles.stat}>{team.draw}</td>
+                        <td className={styles.stat}>{team.lost}</td>
+                        <td className={styles.stat}>
+                          <span className={team.goal_difference >= 0 ? styles.positive : styles.negative}>
+                            {team.goal_difference > 0 ? '+' : ''}{team.goal_difference}
+                          </span>
+                        </td>
+                        <td className={styles.points}>{team.points}</td>
+                      </>
+                    )}
+                  </motion.tr>
+                );
+              })}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>
 
       {muTeam && (
-        <div className={styles.muHighlight}>
+        <motion.div 
+          className={styles.muHighlight}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           <span className={styles.muEmoji}>🔴</span>
           <span>Manchester United is highlighted in red</span>
-        </div>
+        </motion.div>
       )}
     </div>
   );

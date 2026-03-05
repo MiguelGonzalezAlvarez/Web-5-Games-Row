@@ -56,11 +56,30 @@
   );
 }
 
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.headerIcon {
+  color: var(--color-red);
+}
+
 .header h3 {
   font-size: 1.35rem;
   color: var(--color-black);
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .badge {
@@ -72,7 +91,9 @@
   border-radius: var(--radius-full);
   letter-spacing: 0.1em;
   box-shadow: 0 2px 10px rgba(218, 41, 28, 0.3);
-  animation: pulse 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .matches {
@@ -350,4 +371,20 @@
   .team:last-child {
     flex-direction: row-reverse;
   }
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl);
+  text-align: center;
+  color: var(--color-gray-500);
+  flex: 1;
+}
+
+.errorIcon {
+  color: var(--color-error);
+  margin-bottom: var(--space-md);
 }

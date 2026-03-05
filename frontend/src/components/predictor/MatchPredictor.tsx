@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../utils/api';
+import { 
+  Target, 
+  Plus, 
+  Minus, 
+  Swords, 
+  RotateCcw
+} from 'lucide-react';
+import { scaleIn, buttonTap } from '../ui/animationConstants';
 import styles from './MatchPredictor.module.css';
 
 interface Prediction {
@@ -101,38 +110,71 @@ export default function MatchPredictor() {
 
   if (loading) {
     return (
-      <div className={styles.predictor}>
-        <div className={styles.header}>
-          <h3>🎯 Match Predictor</h3>
+      <motion.div 
+        className={styles.predictor}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div 
+          className={styles.header}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Target className={styles.headerIcon} size={24} />
+          <h3>Match Predictor</h3>
           <p>Loading next match...</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   }
 
   if (!nextMatch) {
     return (
-      <div className={styles.predictor}>
+      <motion.div 
+        className={styles.predictor}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         <div className={styles.header}>
-          <h3>🎯 Match Predictor</h3>
+          <Target className={styles.headerIcon} size={24} />
+          <h3>Match Predictor</h3>
           <p>No upcoming match found</p>
         </div>
         <div className={styles.info}>
           <p>Check back later for the next Manchester United match!</p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className={styles.predictor}>
-      <div className={styles.header}>
-        <h3>🎯 Match Predictor</h3>
+    <motion.div 
+      className={styles.predictor}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+    >
+      <motion.div 
+        className={styles.header}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Target className={styles.headerIcon} size={24} />
+        <h3>Match Predictor</h3>
         <p>Predict the next United match result!</p>
-      </div>
+      </motion.div>
 
-      <div className={styles.match}>
+      <motion.div 
+        className={styles.match}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+      >
         <div className={styles.date}>
+          <CalendarIcon />
           {new Date(nextMatch.utc_date).toLocaleDateString('en-GB', {
             weekday: 'long',
             day: 'numeric',
@@ -143,7 +185,11 @@ export default function MatchPredictor() {
         </div>
 
         <div className={styles.teams}>
-          <div className={styles.team}>
+          <motion.div 
+            className={styles.team}
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
             <img 
               src={nextMatch.home_team_crest || 'https://crests.football-data.org/66.png'} 
               alt={nextMatch.home_team}
@@ -151,11 +197,21 @@ export default function MatchPredictor() {
               onError={handleImageError}
             />
             <span className={styles.teamName}>{nextMatch.home_team}</span>
-          </div>
+          </motion.div>
 
-          <div className={styles.vs}>VS</div>
+          <motion.div 
+            className={styles.vs}
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <Swords size={28} />
+          </motion.div>
 
-          <div className={styles.team}>
+          <motion.div 
+            className={styles.team}
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
             <img 
               src={nextMatch.away_team_crest || 'https://crests.football-data.org/55.png'} 
               alt={nextMatch.away_team}
@@ -163,92 +219,187 @@ export default function MatchPredictor() {
               onError={handleImageError}
             />
             <span className={styles.teamName}>{nextMatch.away_team.replace(' FC', '')}</span>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      {!submitted ? (
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.scoreInputs}>
-            <div className={styles.scoreInput}>
-              <button 
-                type="button" 
-                onClick={decrementHome}
-                className={styles.scoreBtn}
-              >-</button>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                value={prediction.homeScore}
-                onChange={handleHomeChange}
-                className={styles.input}
-              />
-              <button 
-                type="button" 
-                onClick={incrementHome}
-                className={styles.scoreBtn}
-              >+</button>
+      <AnimatePresence mode="wait">
+        {!submitted ? (
+          <motion.form 
+            key="form"
+            onSubmit={handleSubmit} 
+            className={styles.form}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className={styles.scoreInputs}>
+              <motion.div 
+                className={styles.scoreInput}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <motion.button 
+                  type="button" 
+                  onClick={decrementHome}
+                  className={styles.scoreBtn}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Minus size={18} />
+                </motion.button>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={prediction.homeScore}
+                  onChange={handleHomeChange}
+                  className={styles.input}
+                />
+                <motion.button 
+                  type="button" 
+                  onClick={incrementHome}
+                  className={styles.scoreBtn}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Plus size={18} />
+                </motion.button>
+              </motion.div>
+
+              <div className={styles.scoreDivider}>
+                <Minus size={24} />
+              </div>
+
+              <motion.div 
+                className={styles.scoreInput}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <motion.button 
+                  type="button" 
+                  onClick={decrementAway}
+                  className={styles.scoreBtn}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Minus size={18} />
+                </motion.button>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={prediction.awayScore}
+                  onChange={handleAwayChange}
+                  className={styles.input}
+                />
+                <motion.button 
+                  type="button" 
+                  onClick={incrementAway}
+                  className={styles.scoreBtn}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Plus size={18} />
+                </motion.button>
+              </motion.div>
             </div>
 
-            <div className={styles.scoreDivider}>-</div>
+            <motion.button 
+              type="submit" 
+              className={styles.submitBtn}
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Submit Prediction
+            </motion.button>
+          </motion.form>
+        ) : (
+          <motion.div 
+            key="result"
+            className={styles.result}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+          >
+            <motion.div 
+              className={styles.predictionResult}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <span className={styles.resultLabel}>Your Prediction</span>
+              <motion.div 
+                className={styles.resultScore}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              >
+                <span className={prediction.homeScore > prediction.awayScore ? styles.winner : ''}>
+                  {prediction.homeScore}
+                </span>
+                <span>-</span>
+                <span className={prediction.awayScore > prediction.homeScore ? styles.winner : ''}>
+                  {prediction.awayScore}
+                </span>
+              </motion.div>
+              <motion.span 
+                className={styles.resultMessage}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                {prediction.homeScore > prediction.awayScore 
+                  ? "Come on United! 🔴" 
+                  : prediction.homeScore === prediction.awayScore 
+                    ? "A draw would be... something 😅" 
+                    : "We can do better! 💪"}
+              </motion.span>
+            </motion.div>
+            <motion.button 
+              onClick={handleReset} 
+              className={styles.resetBtn}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <RotateCcw size={16} />
+              Change Prediction
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            <div className={styles.scoreInput}>
-              <button 
-                type="button" 
-                onClick={decrementAway}
-                className={styles.scoreBtn}
-              >-</button>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                value={prediction.awayScore}
-                onChange={handleAwayChange}
-                className={styles.input}
-              />
-              <button 
-                type="button" 
-                onClick={incrementAway}
-                className={styles.scoreBtn}
-              >+</button>
-            </div>
-          </div>
-
-          <button type="submit" className={styles.submitBtn}>
-            Submit Prediction
-          </button>
-        </form>
-      ) : (
-        <div className={styles.result}>
-          <div className={styles.predictionResult}>
-            <span className={styles.resultLabel}>Your Prediction</span>
-            <div className={styles.resultScore}>
-              <span className={prediction.homeScore > prediction.awayScore ? styles.winner : ''}>
-                {prediction.homeScore}
-              </span>
-              <span>-</span>
-              <span className={prediction.awayScore > prediction.homeScore ? styles.winner : ''}>
-                {prediction.awayScore}
-              </span>
-            </div>
-            <span className={styles.resultMessage}>
-              {prediction.homeScore > prediction.awayScore 
-                ? "Come on United! 🔴" 
-                : prediction.homeScore === prediction.awayScore 
-                  ? "A draw would be... something 😅" 
-                  : "We can do better! 💪"}
-            </span>
-          </div>
-          <button onClick={handleReset} className={styles.resetBtn}>
-            Change Prediction
-          </button>
-        </div>
-      )}
-
-      <div className={styles.info}>
+      <motion.div 
+        className={styles.info}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
         <p>Make your prediction and track your accuracy over time!</p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg 
+      width="14" 
+      height="14" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      style={{ marginRight: '6px', opacity: 0.7 }}
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
   );
 }

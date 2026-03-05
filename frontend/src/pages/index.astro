@@ -190,10 +190,33 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
   }
 
   .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-xl);
     margin-bottom: var(--space-2xl);
+  }
+
+  .grid-item {
+    min-width: 0;
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    width: 100%;
+  }
+
+  .grid-item:nth-child(1) { animation-delay: 0.1s; }
+  .grid-item:nth-child(2) { animation-delay: 0.2s; }
+  .grid-item:nth-child(3) { animation-delay: 0.3s; }
+  .grid-item:nth-child(4) { animation-delay: 0.4s; }
+  .grid-item:nth-child(5) { animation-delay: 0.5s; }
+
+  .standings-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    min-height: auto;
+    height: auto;
+    max-height: none;
+    width: 100%;
   }
 
   .grid-item {
@@ -212,44 +235,76 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
     display: flex;
     flex-direction: column;
     gap: var(--space-xl);
-    height: 620px;
+    min-height: 600px;
+    height: auto;
+    max-height: none;
     grid-column: 1 / -1;
+    margin-bottom: var(--space-xl);
   }
 
   .standings-container .grid-item {
     flex: 1;
     min-height: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .standings-container .matches-section {
-    flex: 1;
-    min-height: 0;
+    flex: 0 0 auto;
+    max-height: 45vh;
+    min-height: 350px;
     overflow: hidden;
+    width: 100%;
   }
 
   .standings-container .standings-section {
-    flex: 1;
-    min-height: 0;
+    flex: 0 0 auto;
+    height: auto;
+    max-height: none;
+    min-height: 350px;
     overflow: hidden;
+    width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .standings-container {
+      min-height: auto;
+      max-height: none;
+    }
+    
+    .standings-container .matches-section {
+      max-height: 50vh;
+      min-height: 300px;
+    }
+    
+    .standings-container .standings-section {
+      min-height: 280px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .standings-container {
+      min-height: auto;
+    }
+    
+    .standings-container .matches-section {
+      min-height: 280px;
+    }
   }
 
   .counter-section {
-    grid-column: 1 / -1;
     max-width: 500px;
     margin: 0 auto;
-    width: 100%;
   }
 
   .predictor-section {
-    grid-column: 1 / -1;
     max-width: 500px;
     margin: 0 auto;
-    width: 100%;
   }
 
   .stats-section {
-    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .about {
@@ -331,16 +386,6 @@ import MatchPredictor from '../components/predictor/MatchPredictor';
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
-  }
-
-  @media (max-width: 1024px) {
-    .main-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .hero h1 {
-      font-size: 3rem;
-    }
   }
 
   @media (max-width: 640px) {

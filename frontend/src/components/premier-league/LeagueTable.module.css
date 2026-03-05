@@ -56,10 +56,44 @@
   );
 }
 
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.headerIcon {
+  color: var(--color-gold);
+}
+
 .headerRight {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+}
+
+.loadingBadge {
+  background: linear-gradient(135deg, var(--color-gray-400) 0%, var(--color-gray-500) 100%);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.loadingBadge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+  animation: spin 1s linear infinite;
 }
 
 .infoBadge {
@@ -72,6 +106,9 @@
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-full);
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .header h3 {
@@ -81,7 +118,7 @@
   letter-spacing: -0.02em;
 }
 
-.updateBadge {
+.liveBadge {
   background: linear-gradient(135deg, var(--color-success) 0%, #16a34a 100%);
   color: white;
   font-size: 0.625rem;
@@ -91,18 +128,19 @@
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-full);
   box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
   animation: pulse 2s ease-in-out infinite;
 }
 
-.updateBadge::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: white;
-  margin-right: 4px;
-  animation: blink 1s ease-in-out infinite;
+.pulseIcon {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes blink {
@@ -354,6 +392,21 @@ tr:hover .points {
   text-align: center;
   color: var(--color-gray-500);
   font-size: 1rem;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl);
+  text-align: center;
+  color: var(--color-gray-500);
+}
+
+.errorIcon {
+  color: var(--color-error);
+  margin-bottom: var(--space-md);
 }
 
 .skeletonRow {

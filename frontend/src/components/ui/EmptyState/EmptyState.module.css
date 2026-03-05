@@ -1,0 +1,70 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-6);
+}
+
+.iconDefault {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-400);
+}
+
+.iconSearch {
+  background: var(--color-info-subtle);
+  color: var(--color-info);
+}
+
+.iconUsers {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8B5CF6;
+}
+
+.iconFiles {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-info);
+}
+
+.iconImages {
+  background: rgba(236, 72, 153, 0.1);
+  color: #EC4899;
+}
+
+.iconTrophy {
+  background: rgba(251, 225, 34, 0.15);
+  color: var(--color-gold-dark);
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-6);
+  max-width: 400px;
+  line-height: var(--leading-relaxed);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}

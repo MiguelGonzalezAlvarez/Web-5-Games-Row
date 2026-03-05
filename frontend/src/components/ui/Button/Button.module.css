@@ -1,0 +1,227 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-weight: var(--font-semibold);
+  text-decoration: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ========================================
+   Variants
+   ======================================== */
+
+/* Primary - Manchester United Red */
+.primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  box-shadow: var(--shadow-primary);
+}
+
+.primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Secondary - Gold */
+.secondary {
+  background: var(--color-secondary);
+  color: var(--color-black);
+  box-shadow: var(--shadow-sm);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--color-secondary-hover);
+  box-shadow: var(--shadow-gold);
+}
+
+.secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Outline */
+.outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.outline:hover:not(:disabled) {
+  background: var(--color-primary-subtle);
+}
+
+.outline:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Ghost */
+.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+  color: var(--text-primary);
+}
+
+.ghost:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Danger */
+.danger {
+  background: var(--color-error);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.danger:hover:not(:disabled) {
+  background: var(--color-error-dark);
+  box-shadow: 0 4px 14px 0 rgb(239 68 68 / 0.25);
+}
+
+.danger:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Link */
+.link {
+  background: transparent;
+  color: var(--color-primary);
+  padding: 0;
+  height: auto;
+}
+
+.link:hover:not(:disabled) {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+/* ========================================
+   Sizes
+   ======================================== */
+
+/* Extra Small */
+.xs {
+  height: 24px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+}
+
+/* Small */
+.sm {
+  height: 32px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* Medium (default) */
+.md {
+  height: 40px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+
+/* Large */
+.lg {
+  height: 48px;
+  padding: 0 var(--space-6);
+  font-size: var(--text-base);
+}
+
+/* Extra Large */
+.xl {
+  height: 56px;
+  padding: 0 var(--space-8);
+  font-size: var(--text-lg);
+}
+
+/* ========================================
+   States
+   ======================================== */
+
+.fullWidth {
+  width: 100%;
+}
+
+.loading {
+  cursor: wait;
+}
+
+.loading .label {
+  opacity: 0.7;
+}
+
+/* ========================================
+   Elements
+   ======================================== */
+
+.label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   Spinner
+   ======================================== */
+
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinnerIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   Screen Reader Only
+   ======================================== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
